@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profil - Fluzy</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      text-align: center;
+      padding: 50px;
+    }
+
+    .container {
+      background-color: rgba(0, 0, 0, 0.3);
+      padding: 2rem;
+      border-radius: 20px;
+      display: inline-block;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .info {
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px;
+      border: none;
+      border-radius: 10px;
+      background-color: #ff5e62;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #ff3c41;
+    }
+
+    .logout-btn {
+      background-color: #444;
+      margin-top: 20px;
+    }
+
+    .bottom-nav {
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Mon Profil</h1>
+    <div class="info"><strong>Prénom :</strong> <span id="prenom"></span></div>
+    <div class="info"><strong>Nom :</strong> <span id="nom"></span></div>
+    <div class="info"><strong>Email :</strong> <span id="email"></span></div>
+    <button class="logout-btn" onclick="deconnexion()">Se déconnecter</button>
+
+    <div class="bottom-nav">
+      <button onclick="goHome()">🏠 Accueil</button>
+      <button onclick="alert('Fonctionnalité bientôt disponible.')">👨‍🏫 Espace Enseignant</button>
+      <button onclick="goStudent()">🎓 Espace Élève</button>
+    </div>
+  </div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem("fluzyUser"));
+    if (!user) {
+      window.location.href = "login.html"; // Si l'utilisateur n'est pas connecté, redirection vers la page de login
+    }
+
+    document.getElementById("prenom").innerText = user.firstName || "";
+    document.getElementById("nom").innerText = user.lastName || "";
+    document.getElementById("email").innerText = user.email || "";
+
+    // Fonction pour se déconnecter
+    function deconnexion() {
+      localStorage.removeItem("fluzyUser"); // Suppression des informations de l'utilisateur dans le localStorage
+      window.location.href = "login.html"; // Redirection vers la page de connexion
+    }
+
+    // Fonction pour aller à la page d'accueil (main.html)
+    function goHome() {
+      window.location.href = "main.html"; // Redirige vers la page principale
+    }
+
+    // Fonction pour aller à l'Espace Élève
+    function goStudent() {
+      window.location.href = "student_home.html"; // Redirige vers l'Espace Élève
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+ <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Scores - Fluzy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        .stats {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        .stats h2 {
+            color: #4CAF50;
+            margin-top: 0;
+        }
+        .stats p {
+            font-size: 1.2rem;
+            margin: 10px 0;
+        }
+        .loading-message {
+            font-size: 1.1rem;
+            color: #666;
+            margin-top: 20px;
+        }
+        .error-message {
+            font-size: 1.1rem;
+            color: red;
+            margin-top: 20px;
+        }
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #888;
+        }
+        .footer a {
+            color: #4CAF50;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        .back-btn {
+            padding: 10px 20px;
+            margin-top: 20px; /* Ajouté pour un peu d'espace */
+            background-color: #3f51b5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .back-btn:hover {
+            background-color: #303f9f;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mes Scores</h1>
+    <div class="stats">
+        <h2>Ton Tableau de Bord :</h2>
+        <div id="score-content">
+            <p><strong>Win Streak :</strong> <span id="win-streak">Chargement...</span></p>
+            <p><strong>Évaluations Terminées :</strong> <span id="evals-completed">Chargement...</span></p>
+            <p><strong>Évaluations Total :</strong> <span id="evals-total">Chargement...</span></p>
+        </div>
+        <div id="loading" class="loading-message">Chargement de vos scores...</div>
+        <div id="error" class="error-message" style="display: none;"></div>
+        <div id="no-data" class="loading-message" style="display: none;">
+            Aucune donnée de score trouvée. Commencez une évaluation !
+        </div>
+    </div>
+    
+    <button class="back-btn" onclick="window.location.href='main.html'">Retour à l'accueil</button>
+
+    <div class="footer">
+        <!-- Mise à jour des liens du footer pour refléter les pages actuelles -->
+        <a href="prof_space.html">Espace Prof (bientôt)</a> |
+        <a href="point.html">Mes Scores</a> | <!-- Mis à jour pour pointer vers cette page -->
+        <a href="profile.html">Profil</a>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        // REMPLACEZ CES VALEURS par l'URL de votre projet Supabase et votre clé "Anon Public"
+        const supabaseUrl = 'https://hbnhxnwgyqgggwursrqm.supabase.co'; // Votre URL de projet Supabase
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhibmh4bndneXFnZ2d3dXJzcnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzNjcwNDIsImV4cCI6MjA2MTk0MzA0Mn0.-LCoZFwZgLTnRAzfq5Cu1kIod3sY69f47YcVVbkPPrg'; 
+        
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const winStreakElem = document.getElementById('win-streak');
+            const evalsCompletedElem = document.getElementById('evals-completed');
+            const evalsTotalElem = document.getElementById('evals-total');
+            const loadingElem = document.getElementById('loading');
+            const errorElem = document.getElementById('error');
+            const noDataElem = document.getElementById('no-data');
+            const scoreContentElem = document.getElementById('score-content');
+
+            scoreContentElem.style.display = 'none'; // Cache le contenu par défaut
+            loadingElem.style.display = 'block'; // Affiche le message de chargement
+
+            try {
+                // 1. Obtenir la session de l'utilisateur actuel
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+                if (sessionError || !session) {
+                    // Si pas de session, redirige vers la page de connexion
+                    errorElem.textContent = "Vous devez être connecté pour voir vos scores.";
+                    errorElem.style.display = 'block';
+                    loadingElem.style.display = 'none';
+                    // Optionnel: rediriger après un délai
+                    setTimeout(() => {
+                        window.location.href = 'login.html'; 
+                    }, 2000);
+                    return;
+                }
+
+                const userId = session.user.id; // L'ID de l'utilisateur connecté
+
+                // 2. Récupérer les scores de l'utilisateur depuis la table 'scores'
+                // Assurez-vous que votre table 'scores' existe et contient une colonne 'user_id'
+                // et d'autres colonnes comme 'win_streak', 'evaluations_completed', 'evaluations_total'
+                const { data: scores, error: scoresError } = await supabase
+                    .from('scores') // Nom de votre table de scores
+                    .select('win_streak, evaluations_completed, evaluations_total')
+                    .eq('user_id', userId) // Filtre par l'ID de l'utilisateur connecté
+                    .single(); // Utilise .single() si vous attendez un seul enregistrement par utilisateur
+
+                if (scoresError && scoresError.code !== 'PGRST116') { // PGRST116 = "No rows found"
+                    errorElem.textContent = "Erreur lors du chargement des scores : " + scoresError.message;
+                    errorElem.style.display = 'block';
+                    scoreContentElem.style.display = 'none';
+                } else if (!scores) {
+                    // Si aucun score n'est trouvé pour cet utilisateur
+                    noDataElem.style.display = 'block';
+                    scoreContentElem.style.display = 'none';
+                } else {
+                    // Affiche les scores si tout est OK
+                    winStreakElem.textContent = scores.win_streak || 0; // Définit 0 par défaut si null
+                    evalsCompletedElem.textContent = scores.evaluations_completed || 0;
+                    evalsTotalElem.textContent = scores.evaluations_total || 0;
+                    scoreContentElem.style.display = 'block'; // Affiche le contenu des scores
+                }
+
+            } catch (generalError) {
+                errorElem.textContent = "Une erreur inattendue est survenue : " + generalError.message;
+                errorElem.style.display = 'block';
+                scoreContentElem.style.display = 'none';
+            } finally {
+                loadingElem.style.display = 'none'; // Masque le message de chargement
+            }
+        });
+    </script>
+</body>
+</html>

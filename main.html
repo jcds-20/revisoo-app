@@ -1,0 +1,174 @@
+ <!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Accueil - Fluzy</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #ff7e5f, #feb47b);
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+      text-align: center;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .no-evals {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .button-container {
+      margin-top: 30px;
+    }
+
+    .action-btn {
+      padding: 12px 20px;
+      margin: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .action-btn:hover {
+      background-color: #45a049;
+    }
+
+    /* Espace en bas */
+    .footer {
+      margin-top: 40px;
+      font-size: 14px;
+      color: white;
+      text-align: center;
+    }
+
+    .footer a {
+      color: #4CAF50;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .footer span {
+      display: block;
+      margin-top: 10px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    /* Messages de "Bientôt" */
+    .message-bientot {
+      display: none;
+      font-size: 18px;
+      color: #ff5722;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    /* Petite taille pour les sections en bas */
+    .small-text {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .space-prof,
+    .space-eleve {
+      cursor: pointer;
+      font-weight: bold;
+      color: #4CAF50;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Home</h1>
+
+  <div class="container">
+    <!-- Le message "Vous n'avez rejoint ni créé aucune évaluation pour le moment." a été retiré. -->
+
+    <!-- Boutons pour créer ou rejoindre une évaluation -->
+    <div class="button-container">
+      <!-- Bouton "Créer une évaluation" redirige vers create_eval.html -->
+      <button class="action-btn" onclick="goToCreateEvaluation()">Créer une évaluation</button>
+      <!-- Bouton "Rejoindre une évaluation" redirige vers join_eval.html -->
+      <button class="action-btn" onclick="goToJoinEvaluation()">Rejoindre une évaluation</button>
+    </div>
+
+    <!-- Section "Bientôt..." pour l'Espace Prof -->
+    <div id="message-prof-bientot" class="message-bientot">
+      Espace Prof bientôt disponible...
+    </div>
+
+    <!-- Section "Bientôt..." pour les Scores -->
+    <div id="message-scores-bientot" class="message-bientot">
+      Mes Scores bientôt disponibles...
+    </div>
+  </div>
+
+  <!-- Espace en bas -->
+  <div class="footer">
+    <div class="small-text">
+      <span class="space-prof" onclick="handleFooterLink('prof')">Espace Prof</span> |
+      <!-- Le lien "Mes Scores" affiche maintenant le message "Bientôt disponible" -->
+      <span class="space-eleve" onclick="handleFooterLink('scores')">Mes Scores</span>
+      <!-- Le bouton "Profil" a été supprimé -->
+    </div>
+
+    <span class="small-text">© 2025 Revisoo - Toutes les évaluations disparaîtront après 7 jours</span>
+  </div>
+
+  <script>
+    // Fonction pour gérer les clics sur les liens du footer (Espace Prof, Mes Scores)
+    function handleFooterLink(section) {
+      const messageProf = document.getElementById('message-prof-bientot');
+      const messageScores = document.getElementById('message-scores-bientot');
+
+      // Cache tous les messages par défaut
+      messageProf.style.display = 'none';
+      messageScores.style.display = 'none';
+
+      if (section === 'prof') {
+        // Affiche le message "Bientôt disponible" pour l'Espace Prof
+        messageProf.style.display = 'block';
+      } else if (section === 'scores') {
+        // Affiche le message "Bientôt disponible" pour les Scores
+        messageScores.style.display = 'block';
+      }
+    }
+
+    // Fonction pour rediriger vers la page de création d'évaluation
+    function goToCreateEvaluation() {
+      window.location.href = 'create_eval.html';
+    }
+
+    // Fonction pour rediriger vers la page pour rejoindre une évaluation
+    function goToJoinEvaluation() {
+      window.location.href = 'join_eval.html';
+    }
+  </script>
+
+</body>
+</html>

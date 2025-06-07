@@ -1,0 +1,333 @@
+ <!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Connexion / Inscription - Revisoo</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      background: linear-gradient(135deg, #6dd5ed, #2193b0); /* Gradient de fond */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden; /* Empêche le défilement si le contenu dépasse */
+    }
+
+    .container {
+      background-color: rgba(255, 255, 255, 0.95); /* Fond blanc légèrement transparent */
+      padding: 3rem; /* Augmentation du padding */
+      border-radius: 25px; /* Bords plus arrondis */
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25); /* Ombre plus prononcée */
+      width: 90%;
+      max-width: 450px; /* Légère augmentation de la largeur max */
+      text-align: center;
+    }
+
+    h2 {
+      color: #333; /* Couleur de titre plus sombre */
+      margin-bottom: 1.5rem; /* Augmentation de la marge inférieure */
+    }
+
+    input {
+      width: calc(100% - 24px); /* Ajustement pour le padding */
+      padding: 12px;
+      margin: 12px 0; /* Augmentation de la marge verticale */
+      border-radius: 12px; /* Bords plus arrondis pour les inputs */
+      border: 1px solid #ddd; /* Bordure plus claire */
+      font-size: 1rem;
+      box-sizing: border-box; /* Important pour le calcul de la largeur */
+    }
+
+    button {
+      width: 100%;
+      padding: 14px; /* Augmentation du padding */
+      border: none;
+      border-radius: 12px; /* Bords plus arrondis pour les boutons */
+      background-color: #3f51b5;
+      color: white;
+      font-size: 1.1rem; /* Légère augmentation de la taille de la police */
+      cursor: pointer;
+      transition: background 0.3s ease; /* Transition plus douce */
+    }
+
+    button:hover {
+      background-color: #303f9f;
+    }
+
+    .tab {
+      display: flex;
+      margin-bottom: 1.5rem; /* Augmentation de la marge inférieure */
+      border-radius: 15px; /* Bords arrondis pour l'ensemble des tabs */
+      overflow: hidden; /* Empêche les bords des boutons de dépasser */
+    }
+
+    .tab button {
+      flex: 1;
+      border-radius: 0;
+      background-color: #e0e0e0;
+      color: #555; /* Couleur de texte plus douce */
+      font-weight: bold; /* Texte en gras pour les onglets */
+      padding: 14px 0; /* Ajustement du padding vertical */
+      transition: background-color 0.3s ease, color 0.3s ease; /* Transitions pour l'effet au survol */
+    }
+
+    .tab button.active {
+      background-color: #3f51b5;
+      color: white;
+    }
+
+    .google-btn {
+      display: none; /* Le bouton Google est masqué car son implémentation n'est pas encore faite */
+      background-color: #db4437;
+      margin-top: 1.2rem; /* Augmentation de la marge supérieure */
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .message { /* Style pour les messages de succès/erreur */
+        margin-top: 0.8rem;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: bold;
+    }
+
+    .error-message {
+      color: red;
+      background-color: #ffebee;
+      border: 1px solid #d32f2f;
+    }
+
+    .success-message {
+        color: #2e7d32;
+        background-color: #e8f5e9;
+        border: 1px solid #a5d6a7;
+    }
+
+    /* Effet de vagues subtiles en arrière-plan */
+    body::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(0deg, transparent, #2193b0, transparent);
+      animation: wave 8s linear infinite;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(0deg, transparent, #6dd5ed, transparent);
+      animation: wave 10s linear infinite;
+      animation-delay: -4s;
+    }
+
+    @keyframes wave {
+      0% {
+        transform: translate(-50%, -75%) rotate(0deg);
+      }
+      100% {
+        transform: translate(-50%, -75%) rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="tab">
+      <button id="tab-login" class="active" onclick="switchTab('login')">Connexion</button>
+      <button id="tab-register" onclick="switchTab('register')">Créer un compte</button>
+    </div>
+
+    <div id="login-form">
+      <h2>Connexion</h2>
+      <input type="email" id="login-email" placeholder="Email" required />
+      <input type="password" id="login-password" placeholder="Mot de passe" required />
+      <button onclick="login()">Se connecter</button>
+      <div class="message error-message" id="login-error"></div>
+      <button class="google-btn">Connexion avec Google</button>
+    </div>
+
+    <div id="register-form" class="hidden">
+      <h2>Créer un compte</h2>
+      <input type="text" id="register-firstname" placeholder="Prénom" required />
+      <input type="text" id="register-lastname" placeholder="Nom" required />
+      <input type="email" id="register-email" placeholder="Email" required />
+      <input type="password" id="register-password" placeholder="Mot de passe" required />
+      <button onclick="register()">Créer un compte</button>
+      <div class="message error-message" id="register-error"></div>
+      <div class="message success-message" id="register-success" style="display: none;"></div>
+      <button class="google-btn">S'inscrire avec Google</button>
+    </div>
+  </div>
+
+  <script type="module">
+    // Importe la fonction createClient de la bibliothèque Supabase via CDN
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    // REMPLACEZ CES VALEURS par l'URL de votre projet Supabase et votre clé "Anon Public"
+    const supabaseUrl = 'https://hbnhxnwgyqgggwursrqm.supabase.co'; // Votre URL de projet Supabase
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhibmh4bndneXFnZ2d3dXJzcnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzNjcwNDIsImV4cCI6MjA2MTk0MzA0Mn0.-LCoZFwZgLTnRAzfq5Cu1kIod3sY69f47YcVVbkPPrg'; // Votre clé Anon Public Supabase
+    
+    // Initialise le client Supabase
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Attache les fonctions JavaScript aux événements du DOM une fois la page chargée
+    document.addEventListener('DOMContentLoaded', function() {
+      const loginError = document.getElementById("login-error");
+      const registerError = document.getElementById("register-error");
+      const registerSuccess = document.getElementById("register-success"); // Référence au nouveau message de succès
+
+      // Fonction utilitaire pour valider le format de l'email
+      function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      }
+
+      // Fonction pour changer d'onglet (Connexion / Créer un compte)
+      window.switchTab = function(tab) {
+        const loginForm = document.getElementById("login-form");
+        const registerForm = document.getElementById("register-form");
+        const loginTab = document.getElementById("tab-login");
+        const registerTab = document.getElementById("tab-register");
+
+        // Efface les messages d'erreur et de succès précédents
+        loginError.textContent = "";
+        loginError.style.display = 'none';
+        registerError.textContent = "";
+        registerError.style.display = 'none';
+        registerSuccess.textContent = "";
+        registerSuccess.style.display = 'none';
+
+        if (tab === "login") {
+          loginForm.classList.remove("hidden");
+          registerForm.classList.add("hidden");
+          loginTab.classList.add("active");
+          registerTab.classList.remove("active");
+        } else {
+          loginForm.classList.add("hidden");
+          registerForm.classList.remove("hidden");
+          loginTab.classList.remove("active");
+          registerTab.classList.add("active");
+        }
+      };
+
+      // Fonction pour gérer l'inscription d'un nouvel utilisateur
+      window.register = async function() {
+        registerError.textContent = ""; // Réinitialise le message d'erreur
+        registerError.style.display = 'none';
+        registerSuccess.textContent = ""; // Réinitialise le message de succès
+        registerSuccess.style.display = 'none';
+
+        const firstname = document.getElementById("register-firstname").value.trim();
+        const lastname = document.getElementById("register-lastname").value.trim();
+        const email = document.getElementById("register-email").value.trim();
+        const password = document.getElementById("register-password").value;
+
+        // Validation des champs vides
+        if (!firstname || !lastname || !email || !password) {
+          registerError.textContent = "Tous les champs sont obligatoires.";
+          registerError.style.display = 'block';
+          return;
+        }
+
+        // Validation du format de l'email
+        if (!isValidEmail(email)) {
+          registerError.textContent = "Veuillez entrer une adresse email valide.";
+          registerError.style.display = 'block';
+          return;
+        }
+
+        // Validation du mot de passe (longueur, chiffres, caractères)
+        const digitCount = (password.match(/\d/g) || []).length;
+        const validChars = /^[a-zA-Z0-9]+$/.test(password);
+
+        if (password.length < 7 || digitCount < 3 || !validChars) {
+          registerError.textContent = "Mot de passe invalide. Il doit contenir au moins 7 caractères, dont 3 chiffres, et uniquement des lettres et chiffres.";
+          registerError.style.display = 'block';
+          return;
+        }
+
+        // Appel à Supabase pour l'inscription
+        const { error } = await supabase.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: { // Ces données sont stockées dans user_metadata de Supabase
+              firstname: firstname,
+              lastname: lastname
+            }
+          }
+        });
+
+        if (error) {
+          // Affiche l'erreur de Supabase si l'inscription échoue
+          registerError.textContent = "Erreur d'inscription : " + error.message;
+          registerError.style.display = 'block';
+        } else {
+          // Affiche le message de succès et de validation email
+          registerSuccess.textContent = "Votre compte a été créé ! Veuillez valider votre adresse e-mail. Un e-mail de confirmation vous a été envoyé.";
+          registerSuccess.style.display = 'block';
+          // Optionnel: Réinitialiser les champs du formulaire après le succès
+          document.getElementById("register-firstname").value = '';
+          document.getElementById("register-lastname").value = '';
+          document.getElementById("register-email").value = '';
+          document.getElementById("register-password").value = '';
+
+          // Pas de redirection immédiate ici pour laisser le temps à l'utilisateur de lire le message
+          // L'utilisateur devra valider son email avant de pouvoir se connecter.
+        }
+      };
+
+      // Fonction pour gérer la connexion d'un utilisateur existant
+      window.login = async function() {
+        loginError.textContent = ""; // Réinitialise le message d'erreur
+        loginError.style.display = 'none';
+
+        const email = document.getElementById("login-email").value.trim();
+        const password = document.getElementById("login-password").value;
+
+        // Validation des champs vides
+        if (!email || !password) {
+          loginError.textContent = "Veuillez remplir tous les champs.";
+          loginError.style.display = 'block';
+          return;
+        }
+
+        // Validation du format de l'email
+        if (!isValidEmail(email)) {
+          loginError.textContent = "Veuillez entrer une adresse email valide.";
+          loginError.style.display = 'block';
+          return;
+        }
+
+        // Appel à Supabase pour la connexion
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+        if (error) {
+          // Affiche l'erreur de Supabase si la connexion échoue
+          loginError.textContent = "Erreur de connexion : " + error.message;
+          loginError.style.display = 'block';
+        } else {
+          // Redirige vers la page d'accueil si la connexion est réussie
+          window.location.href = "main.html";
+        }
+      };
+    });
+  </script>
+</body>
+</html>

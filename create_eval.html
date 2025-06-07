@@ -1,0 +1,573 @@
+ <!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Créer une Évaluation - Revisoo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif; /* Nouvelle police */
+      background: linear-gradient(135deg, #a8dadc, #457b9d); /* Dégradé de couleurs plus modernes */
+      margin: 0;
+      padding: 20px;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      color: #f1faee; /* Couleur claire pour le titre */
+      margin-bottom: 30px;
+      text-align: center;
+      font-size: 2.8em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2); /* Ombre pour le titre */
+    }
+
+    .container {
+      background-color: rgba(255, 255, 255, 0.98); /* Plus opaque */
+      padding: 35px; /* Plus de padding */
+      border-radius: 20px; /* Bords plus arrondis */
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* Ombre plus prononcée */
+      width: 90%;
+      max-width: 850px; /* Largeur légèrement augmentée */
+      text-align: center;
+      transition: all 0.3s ease-in-out; /* Transition pour le survol */
+    }
+    .container:hover {
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        transform: translateY(-3px);
+    }
+
+    .form-group {
+      margin-bottom: 25px; /* Plus d'espace */
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px; /* Plus d'espace */
+      font-weight: 600; /* Plus gras */
+      color: #2196f3; /* Couleur bleue */
+      font-size: 1.1em;
+    }
+
+    input[type="file"] {
+      display: block;
+      width: 100%;
+      padding: 12px; /* Plus de padding */
+      border: 1px solid #b0bec5;
+      border-radius: 10px; /* Bords plus arrondis */
+      box-sizing: border-box;
+      background-color: #f8faff; /* Arrière-plan légèrement teinté */
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    input[type="text"], textarea { 
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #b0bec5;
+      border-radius: 10px; /* Bords plus arrondis */
+      box-sizing: border-box;
+      min-height: 120px;
+      resize: vertical;
+      font-size: 1em;
+      line-height: 1.5;
+      background-color: #f8faff;
+      transition: border-color 0.3s ease;
+    }
+    input[type="text"]:focus, textarea:focus {
+        border-color: #2196f3; /* Bordure bleue au focus */
+        outline: none;
+    }
+
+    .action-btn {
+      padding: 14px 30px; /* Plus grand */
+      background-color: #4CAF50; /* Vert */
+      color: white;
+      border: none;
+      border-radius: 10px; /* Bords plus arrondis */
+      font-size: 1.2em; /* Plus grande taille de police */
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      margin-top: 15px; /* Plus d'espace */
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Ombre pour les boutons */
+    }
+
+    .action-btn:hover {
+      background-color: #45a049;
+      transform: translateY(-2px); /* Léger effet de soulèvement */
+    }
+
+    .back-btn {
+      padding: 12px 25px;
+      background-color: #f44336; /* Rouge */
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      margin-top: 40px; /* Plus d'espace */
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .back-btn:hover {
+      background-color: #d32f2f;
+      transform: translateY(-2px);
+    }
+
+    .message {
+      margin-top: 25px; /* Plus d'espace */
+      padding: 18px; /* Plus de padding */
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
+    .loading-message {
+      background-color: #fffde7;
+      color: #c0a000;
+      border: 1px solid #ffe082;
+    }
+
+    .error-message {
+      background-color: #ffebee;
+      color: #d32f2f;
+      border: 1px solid #ef9a9a;
+    }
+
+    .success-message {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #a5d6a7;
+    }
+    
+    .evaluation-preview-display {
+        display: none; /* S'assure que cela ne s'affiche pas */
+    }
+
+    .code-display {
+        margin-top: 25px;
+        font-size: 1.3em; /* Plus grand */
+        font-weight: bold;
+        color: #3f51b5;
+        padding: 15px;
+        border: 3px dashed #3f51b5; /* Bordure plus épaisse */
+        border-radius: 12px; /* Bords plus arrondis */
+        display: flex; /* Utilise flexbox pour l'alignement */
+        justify-content: center;
+        align-items: center;
+        gap: 15px; /* Espace entre les éléments */
+        word-break: break-all;
+        background-color: #e8eaf6; /* Fond légèrement teinté */
+    }
+    .code-display button {
+        padding: 8px 15px; /* Ajuste la taille du bouton Copier */
+        font-size: 0.9em;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .code-display #copyCodeBtn { /* ID spécifique pour le bouton copier */
+        background-color: #007bff; /* Bleu */
+        color: white;
+    }
+    .code-display #copyCodeBtn:hover {
+        background-color: #0056b3;
+        transform: translateY(-1px);
+    }
+    .code-display #startEvalBtn {
+        background-color: #28a745; /* Vert pour Commencer */
+        color: white;
+        opacity: 0.5; /* Initialement désactivé visuellement */
+        cursor: not-allowed;
+    }
+    .code-display #startEvalBtn.active { /* Classe pour activer le bouton */
+        opacity: 1;
+        cursor: pointer;
+    }
+    .code-display #startEvalBtn.active:hover {
+        background-color: #218838;
+        transform: translateY(-1px);
+    }
+
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.2em;
+      }
+      .container {
+        padding: 25px;
+      }
+      .action-btn, .back-btn {
+        font-size: 1em;
+        padding: 12px 20px;
+      }
+      .code-display {
+          flex-direction: column; /* Empile les éléments sur petits écrans */
+          font-size: 1.1em;
+      }
+      .code-display button {
+          margin-left: 0 !important; /* Réinitialise le margin-left pour les petits écrans */
+          margin-top: 10px; /* Ajoute un espace entre les boutons empilés */
+          width: calc(100% - 30px); /* Ajuste la largeur */
+      }
+    }
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .action-btn, .back-btn {
+        padding: 10px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Créer une Évaluation</h1>
+
+  <div class="container">
+    <div class="form-group">
+        <label for="evaluationTitle">Titre de l'évaluation :</label>
+        <input type="text" id="evaluationTitle" placeholder="Ex: Évaluation sur la Révolution Française" required />
+    </div>
+
+    <div class="form-group">
+      <label for="imageUpload">Télécharger des images (optionnel) :</label>
+      <input type="file" id="imageUpload" accept="image/*" multiple />
+    </div>
+
+    <div class="form-group">
+      <label for="instructions">Instructions pour l'IA (ex: "Crée une évaluation de 5 questions sur l'image.", "Questions sur les parties du corps humain.") :</label>
+      <textarea id="instructions" placeholder="Décrivez le type d'évaluation ou le sujet souhaité."></textarea>
+    </div>
+
+    <button class="action-btn" id="generateBtn">Générer l'Évaluation</button>
+
+    <div id="statusMessage" class="message loading-message" style="display: none;">
+      Génération en cours, veuillez patienter...
+    </div>
+    <div id="errorMessage" class="message error-message" style="display: none;">
+      Une erreur est survenue.
+    </div>
+    <div id="successMessage" class="message success-message" style="display: none;">
+        Évaluation générée et enregistrée avec succès !
+    </div>
+
+    <div id="evaluationCodeDisplay" class="code-display" style="display: none;"> <!-- Masqué par défaut -->
+        Code de l'évaluation : <span id="generatedCode"></span>
+        <button id="copyCodeBtn" onclick="copyToClipboard('generatedCode')">Copier</button>
+        <button id="startEvalBtn" disabled>Commencer l'évaluation</button>
+    </div>
+  </div>
+
+  <button class="back-btn" onclick="window.location.href='main.html'">Retour à l'accueil</button>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    // REMPLACEZ CES VALEURS par l'URL de votre projet Supabase et votre clé "Anon Public"
+    // Cette clé est visible mais protégée par vos règles de sécurité RLS sur Supabase.
+    const supabaseUrl = 'https://hbnhxnwgyqgggwursrqm.supabase.co'; 
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhibmh4bndneXFnZ2d3dXJzcnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzNjcwNDIsImV4cCI6MjA2MTk0MzA0Mn0.-LCoZFwZgLTNq_0uF-wzU4K5f4gX5g4b0x7gX0R6d00'; 
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // 🚨 URL de votre fonction serverless Vercel pour la GÉNÉRATION d'évaluations 🚨
+    // REMPLACEZ VOTRE_NOM_DE_PROJET par le nom de votre projet Vercel
+    const OPENAI_GENERATE_ENDPOINT = 'https://VOTRE_NOM_DE_PROJET.vercel.app/api/generate-evaluation'; 
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const evaluationTitleInput = document.getElementById('evaluationTitle');
+      const imageUpload = document.getElementById('imageUpload');
+      const instructionsTextarea = document.getElementById('instructions');
+      const generateBtn = document.getElementById('generateBtn');
+      const statusMessage = document.getElementById('statusMessage');
+      const errorMessage = document.getElementById('errorMessage');
+      const successMessage = document.getElementById('successMessage');
+      const evaluationCodeDisplay = document.getElementById('evaluationCodeDisplay');
+      const generatedCodeSpan = document.getElementById('generatedCode');
+      const startEvalBtn = document.getElementById('startEvalBtn');
+
+      startEvalBtn.disabled = true; 
+      startEvalBtn.classList.remove('active'); 
+
+      generateBtn.addEventListener('click', generateAndSaveEvaluation);
+      startEvalBtn.addEventListener('click', () => {
+          const code = generatedCodeSpan.textContent;
+          if (code && !startEvalBtn.disabled) { 
+              window.location.href = `take_eval.html?code=${code}`;
+          } else {
+              errorMessage.textContent = "Aucun code d'évaluation valide à lancer.";
+              errorMessage.style.display = 'block';
+          }
+      });
+
+      window.copyToClipboard = function(elementId) {
+        const element = document.getElementById(elementId);
+        const textToCopy = element.textContent;
+        const textarea = document.createElement('textarea');
+        textarea.value = textToCopy;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert("Code copié dans le presse-papiers !");
+      };
+
+      async function generateAndSaveEvaluation() {
+        statusMessage.style.display = 'block';
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+        evaluationCodeDisplay.style.display = 'none';
+        generatedCodeSpan.textContent = '';
+        startEvalBtn.disabled = true; 
+        startEvalBtn.classList.remove('active'); 
+
+        const title = evaluationTitleInput.value.trim();
+        const files = imageUpload.files;
+        const instructions = instructionsTextarea.value.trim();
+
+        if (!title) {
+            errorMessage.textContent = "Veuillez donner un titre à l'évaluation.";
+            errorMessage.style.display = 'block';
+            statusMessage.style.display = 'none';
+            return;
+        }
+
+        // Vérification de l'endpoint backend
+        if (!OPENAI_GENERATE_ENDPOINT || OPENAI_GENERATE_ENDPOINT.includes('VOTRE_NOM_DE_PROJET')) { 
+            errorMessage.textContent = "Erreur: L'endpoint du serveur backend pour la génération d'IA n'est pas configuré correctement. Veuillez remplacer 'VOTRE_NOM_DE_PROJET' par votre URL Vercel.";
+            errorMessage.style.display = 'block';
+            statusMessage.style.display = 'none';
+            return;
+        }
+
+        let messagesContent = [];
+
+        if (instructions) {
+          messagesContent.push({ type: "text", text: instructions });
+        } else if (files.length === 0) { 
+          errorMessage.textContent = "Veuillez fournir des instructions ou des images pour la génération.";
+          errorMessage.style.display = 'block';
+          statusMessage.style.display = 'none';
+          return;
+        }
+
+        for (const file of files) {
+          if (!file.type.startsWith('image/')) {
+            errorMessage.textContent = "Seules les images sont acceptées.";
+            errorMessage.style.display = 'block';
+            statusMessage.style.display = 'none';
+            return;
+          }
+          const base64Data = await fileToBase64(file);
+          messagesContent.push({
+            type: "image_url",
+            image_url: {
+              url: base64Data
+            }
+          });
+        }
+
+        if (messagesContent.length === 0) {
+          errorMessage.textContent = "Veuillez fournir des instructions ou télécharger au moins une image.";
+          errorMessage.style.display = 'block';
+          statusMessage.style.display = 'none';
+          return;
+        }
+
+        let systemPrompt = `Vous êtes un assistant qui crée des évaluations formatives.
+        Générez une évaluation de 5 à 10 questions MAXIMUM.
+        La réponse doit être un tableau d'objets JSON strict. Chaque objet doit avoir les propriétés suivantes :
+        - "question_number": Numéro de la question (entier).
+        - "type": "QCM" ou "short_answer".
+        - "question": Le texte de la question.
+        - "options": Un tableau de chaînes de caractères si le type est "QCM", sinon un tableau vide ([]).
+        - "correct_answer": La réponse correcte à la question (chaîne de caractères).
+
+        Exemple de format QCM :
+        [
+          {
+            "question_number": 1,
+            "type": "QCM",
+            "question": "Quel est le modèle d'IA le plus récent d'OpenAI capable de vision ?",
+            "options": ["GPT-3.5", "GPT-4", "GPT-4o", "Claude 3"],
+            "correct_answer": "GPT-4o"
+          }
+        ]
+
+        Exemple de format Question courte :
+        [
+          {
+            "question_number": 2,
+            "type": "short_answer",
+            "question": "Expliquez brièvement l'avantage principal de l'API GPT-4o-mini en termes de budget.",
+            "options": [],
+            "correct_answer": "Son coût est très faible par rapport à ses performances et à sa capacité à gérer le texte et les images."
+          }
+        ]
+        Répondez uniquement avec le tableau JSON, sans texte explicatif supplémentaire avant ou après.
+        `;
+        
+        if (instructions && files.length > 0) {
+            systemPrompt += ` Tenez compte de l'instruction utilisateur suivante : "${instructions}".`;
+        } else if (instructions && files.length === 0) {
+            systemPrompt += ` L'évaluation doit être basée sur l'instruction utilisateur suivante : "${instructions}".`;
+        } else if (instructions === "" && files.length > 0) {
+            systemPrompt += ` L'évaluation doit être basée sur les images fournies.`;
+        }
+
+        const payloadToSendToBackend = {
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: messagesContent }
+          ],
+          max_tokens: 2000
+        };
+
+        let generatedEvaluationData = null;
+        let evaluationCode = '';
+
+        try {
+          // Appel au serveur backend pour la génération de l'évaluation
+          const response = await fetch(OPENAI_GENERATE_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payloadToSendToBackend)
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            errorMessage.textContent = "Erreur du serveur backend lors de la génération de l'évaluation : " + (errorData.error ? errorData.error.message : response.statusText); 
+            errorMessage.style.display = 'block';
+            return;
+          }
+
+          const result = await response.json(); 
+
+          if (result.choices && result.choices.length > 0 && result.choices[0].message && result.choices[0].message.content) {
+            const rawContent = result.choices[0].message.content;
+            
+            try {
+                let cleanContent = rawContent.replace(/```json\s*|```/g, '').trim();
+                generatedEvaluationData = JSON.parse(cleanContent);
+                if (!Array.isArray(generatedEvaluationData) || generatedEvaluationData.length === 0 || 
+                    !generatedEvaluationData[0].question || !generatedEvaluationData[0].type) {
+                    throw new Error("Le serveur backend n'a pas retourné un format d'évaluation valide.");
+                }
+            } catch (parseError) {
+                errorMessage.textContent = "Le serveur backend a généré du contenu, mais il n'est pas au format JSON attendu. Erreur de parsing: " + parseError.message;
+                errorMessage.style.display = 'block';
+                return;
+            }
+          } else {
+            errorMessage.textContent = "Aucune évaluation n'a pu être générée par le serveur backend.";
+            errorMessage.style.display = 'block';
+            return;
+          }
+
+          // Obtenir l'utilisateur connecté
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError || !session) {
+              errorMessage.textContent = "Vous devez être connecté pour enregistrer une évaluation.";
+              errorMessage.style.display = 'block';
+              return;
+          }
+          const creatorId = session.user.id;
+
+          // Génération d'un code unique de 5 caractères
+          function generateUniqueCode(length = 5) {
+              let result = '';
+              const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+              const charactersLength = characters.length;
+              for (let i = 0; i < length; i++) {
+                  result += characters.charAt(Math.floor(Math.random() * charactersLength));
+              }
+              return result;
+          }
+
+          let isCodeUnique = false;
+          let attempts = 0;
+          const maxAttempts = 10; 
+
+          while (!isCodeUnique && attempts < maxAttempts) {
+              evaluationCode = generateUniqueCode();
+              const { data: existingEval, error: checkError } = await supabase
+                  .from('evaluations')
+                  .select('code')
+                  .eq('code', evaluationCode);
+
+              if (checkError) {
+                  throw new Error("Erreur lors de la vérification de l'unicité du code dans Supabase : " + checkError.message + ". Veuillez vérifier votre clé Supabase et vos règles RLS.");
+              }
+
+              if (!existingEval || existingEval.length === 0) {
+                  isCodeUnique = true;
+              }
+              attempts++;
+          }
+
+          if (!isCodeUnique) {
+              errorMessage.textContent = "Impossible de générer un code unique après plusieurs tentatives. Veuillez réessayer.";
+              errorMessage.style.display = 'block';
+              return;
+          }
+
+          // Sauvegarde de l'évaluation dans Supabase
+          const { error: saveError } = await supabase
+              .from('evaluations')
+              .insert([
+                  {
+                      code: evaluationCode,
+                      title: title,
+                      questions_content: JSON.stringify(generatedEvaluationData), 
+                      creator_id: creatorId
+                  }
+              ]);
+
+          if (saveError) {
+              errorMessage.textContent = "Erreur lors de l'enregistrement de l'évaluation dans Supabase : " + saveError.message + ". Veuillez vérifier vos permissions d'insertion (RLS).";
+              errorMessage.style.display = 'block';
+          } else {
+              successMessage.textContent = "Évaluation générée et enregistrée avec succès !";
+              successMessage.style.display = 'block';
+              generatedCodeSpan.textContent = evaluationCode;
+              evaluationCodeDisplay.style.display = 'flex'; 
+              startEvalBtn.disabled = false; 
+              startEvalBtn.classList.add('active'); 
+          }
+
+        } catch (generalError) {
+          errorMessage.textContent = "Une erreur inattendue est survenue : " + generalError.message;
+          errorMessage.style.display = 'block';
+          console.error("Erreur complète :", generalError);
+        } finally {
+          statusMessage.style.display = 'none';
+        }
+      }
+
+      function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = error => reject(error);
+          reader.readAsDataURL(file);
+        });
+      }
+    });
+  </script>
+</body>
+</html>

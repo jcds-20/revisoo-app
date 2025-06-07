@@ -1,0 +1,647 @@
+ !DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passer l'Évaluation - Fluzy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right, #f0f2f7, #bbdefb); /* Dégradé de bleu clair */
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #2196f3; /* Bleu vibrant */
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5em; /* Taille ajustée pour le titre */
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 800px;
+            text-align: left;
+            min-height: 400px; /* Hauteur minimale pour éviter le redimensionnement */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .question-block {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .question-block h3 {
+            margin-top: 0;
+            color: #3f51b5; /* Bleu foncé */
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .question-block .options label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+
+        .question-block .options input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2); /* Agrandir les radios */
+        }
+
+        .question-block textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #b0bec5; /* Gris bleu clair */
+            border-radius: 8px;
+            min-height: 80px;
+            resize: vertical;
+            font-size: 1em;
+            line-height: 1.5;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+        .question-block textarea:focus {
+            border-color: #2196f3; /* Bleu vibrant au focus */
+            outline: none;
+        }
+
+        .action-btn, .nav-btn, .back-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .action-btn {
+            background-color: #4CAF50; /* Vert */
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .action-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn {
+            background-color: #3f51b5; /* Bleu foncé */
+            margin: 0 5px;
+            width: 150px;
+        }
+        .nav-btn:hover {
+            background-color: #303f9f;
+            transform: translateY(-2px);
+        }
+        .nav-controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 15px; /* Plus d'espace entre les boutons de navigation */
+        }
+
+        .back-btn {
+            background-color: #f44336; /* Rouge */
+            margin-top: 30px;
+        }
+
+        .back-btn:hover {
+            background-color: #d32f2f;
+            transform: translateY(-2px);
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .loading-message {
+            background-color: #fffde7; /* Jaune très clair */
+            color: #c0a000; /* Jaune plus foncé */
+            border: 1px solid #ffe082;
+        }
+
+        .error-message {
+            background-color: #ffebee; /* Rouge très clair */
+            color: #d32f2f; /* Rouge plus foncé */
+            border: 1px solid #ef9a9a;
+        }
+
+        .score-display {
+            background-color: #e3f2fd; /* Bleu très clair */
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+            font-size: 1.6em; /* Plus grand */
+            font-weight: bold;
+            color: #1a237e; /* Bleu très foncé */
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .correction-feedback {
+            margin-top: 15px;
+            padding: 20px; /* Plus de padding */
+            border-radius: 8px;
+            background-color: #f0f4f7; /* Gris clair */
+            border: 1px solid #cfd8dc; /* Gris bleu */
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            display: none;
+        }
+        .correction-feedback h2 {
+            color: #3f51b5; /* Bleu foncé */
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+
+        .feedback-correct {
+            color: #2e7d32; /* Vert foncé */
+            font-weight: bold;
+        }
+
+        .feedback-incorrect {
+            color: #d32f2f; /* Rouge foncé */
+            font-weight: bold;
+        }
+        
+        .question-number-display {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 1.1em;
+            color: #555; /* Gris moyen */
+            align-self: center; /* Centrer verticalement dans flex */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            .action-btn, .nav-btn, .back-btn {
+                width: 100%;
+                margin-left: 0;
+                margin-right: 0;
+                font-size: 1em;
+                padding: 10px 15px;
+            }
+            .nav-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 id="evaluationTitleDisplay">Chargement de l'évaluation...</h1>
+
+    <div class="container">
+        <div id="evaluationForm">
+            <!-- Les questions seront générées ici une par une -->
+        </div>
+
+        <div id="loadingMessage" class="message loading-message" style="display: none;">Chargement...</div>
+        <div id="errorMessage" class="message error-message" style="display: none;"></div>
+
+        <div class="nav-controls">
+            <button class="nav-btn" id="prevBtn" style="display: none;">Précédent</button>
+            <span id="questionNumberDisplay" class="question-number-display" style="display: none;"></span>
+            <button class="nav-btn" id="nextBtn" style="display: none;">Suivant</button>
+        </div>
+        
+        <button class="action-btn" id="submitEvalBtn" style="display: none;">Soumettre l'Évaluation</button>
+        <button class="action-btn" id="retryLoadBtn" style="display: none; background-color: #ff9800;">Réessayer de charger l'évaluation</button>
+
+        <div id="scoreDisplay" class="score-display" style="display: none;">
+            Votre score : <span id="finalScore"></span> / <span id="totalQuestions"></span>
+        </div>
+        <div id="correctionFeedback" class="correction-feedback" style="display: none;">
+            <h2>Correction et Feedback :</h2>
+            <div id="feedbackContent"></div>
+        </div>
+    </div>
+
+    <button class="back-btn" onclick="window.location.href='main.html'">Retour à l'accueil</button>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        // CLÉ SUPABASE ANON PUBLIC : C'est celle qui fonctionne déjà dans create_eval.html et autres pages
+        const supabaseUrl = 'https://hbnhxnwgyqgggwursrqm.supabase.co'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhibmh4bndneXFnZ2d3dXJzcnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzNjcwNDIsImV4cCI6MjA2MTk0MzA0Mn0.-LCoZFwZgLTNq_0uF-wzU4K5f4gX5g4b0x7gX0R6d00'; 
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // 🚨 URL de votre fonction serverless Vercel pour la CORRECTION 🚨
+        // REMPLACEZ VOTRE_NOM_DE_PROJET par le nom de votre projet Vercel
+        const OPENAI_CORRECTION_ENDPOINT = 'https://VOTRE_NOM_DE_PROJET.vercel.app/api/correct-answer'; 
+        
+        // --- TRÈS IMPORTANT POUR LE DÉBOGAGE : Vérifiez ces logs dans la console du navigateur ---
+        console.log("Supabase URL utilisée:", supabaseUrl);
+        console.log("Supabase Key utilisée (début):", supabaseKey.substring(0, 10) + '...'); 
+        console.log("OpenAI Correction Endpoint:", OPENAI_CORRECTION_ENDPOINT); 
+        // ------------------------------------------------------------------------------------
+
+        let currentEvaluationData = []; 
+        let userAnswers = {}; 
+        let currentQuestionIndex = 0; 
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const evaluationCode = urlParams.get('code'); 
+
+            const evaluationTitleDisplay = document.getElementById('evaluationTitleDisplay');
+            const evaluationForm = document.getElementById('evaluationForm');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            const submitEvalBtn = document.getElementById('submitEvalBtn');
+            const retryLoadBtn = document.getElementById('retryLoadBtn');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const finalScoreSpan = document.getElementById('finalScore');
+            const totalQuestionsSpan = document.getElementById('totalQuestions');
+            const correctionFeedbackDiv = document.getElementById('correctionFeedback'); 
+            const feedbackContentDiv = document.getElementById('feedbackContent');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const questionNumberDisplay = document.getElementById('questionNumberDisplay');
+
+            prevBtn.addEventListener('click', () => navigateQuestions(-1));
+            nextBtn.addEventListener('click', () => navigateQuestions(1));
+            submitEvalBtn.addEventListener('click', submitEvaluation);
+            retryLoadBtn.addEventListener('click', () => window.location.reload());
+
+            if (!evaluationCode) {
+                evaluationTitleDisplay.textContent = "Erreur : Code d'évaluation manquant.";
+                loadingMessage.style.display = 'none';
+                errorMessage.textContent = "Veuillez accéder à cette page avec un code d'évaluation valide (ex: take_eval.html?code=ABC123).";
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            await loadEvaluation(evaluationCode);
+
+            async function loadEvaluation(code) {
+                loadingMessage.style.display = 'block';
+                errorMessage.style.display = 'none';
+                submitEvalBtn.style.display = 'none';
+                retryLoadBtn.style.display = 'none';
+                evaluationForm.innerHTML = '';
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+                questionNumberDisplay.style.display = 'none';
+                scoreDisplay.style.display = 'none';
+                correctionFeedbackDiv.style.display = 'none';
+
+                try {
+                    const { data, error } = await supabase
+                        .from('evaluations')
+                        .select('title, questions_content')
+                        .eq('code', code)
+                        .single();
+
+                    if (error) {
+                        console.error("Erreur de Supabase (objet complet):", error);
+                        console.error("Code d'erreur Supabase:", error.code);
+                        console.error("Statut HTTP Supabase:", error.status);
+
+                        if (error.status === 401) {
+                            errorMessage.textContent = `Erreur d'authentification (401) : La clé API Supabase est incorrecte ou non acceptée par le serveur. Veuillez VÉRIFIER VOTRE CLÉ (${supabaseKey.substring(0, 10)}...) et RECHARGER LA PAGE en vidant le cache.`;
+                        } else if (error.code === 'PGRST116') {
+                            errorMessage.textContent = "Ce code d'évaluation n'existe pas ou a expiré."; 
+                        } else if (error.status === 403) {
+                            errorMessage.textContent = `Accès refusé (403) : Les règles RLS pour la table 'evaluations' ne permettent pas la lecture pour l'utilisateur anonyme. Vérifiez vos politiques RLS sur Supabase.`;
+                        } else {
+                            errorMessage.textContent = `Erreur lors du chargement de Supabase : ${error.message}.`;
+                        }
+                        errorMessage.style.display = 'block';
+                        retryLoadBtn.style.display = 'block';
+                        return;
+                    }
+
+                    if (data && data.questions_content) {
+                        evaluationTitleDisplay.textContent = data.title;
+                        
+                        try {
+                            currentEvaluationData = JSON.parse(data.questions_content);
+                            if (!Array.isArray(currentEvaluationData) || currentEvaluationData.length === 0) {
+                                throw new Error("Le contenu de l'évaluation est invalide.");
+                            }
+                            currentEvaluationData.forEach((q, index) => {
+                                const questionIdentifier = `q${q.question_number || (index + 1)}`;
+                                userAnswers[questionIdentifier] = ''; 
+                            });
+
+                            currentQuestionIndex = 0; 
+                            renderCurrentQuestion();
+                            submitEvalBtn.style.display = 'block'; 
+                            updateNavButtons(); 
+                            questionNumberDisplay.style.display = 'block'; 
+
+                        } catch (parseError) {
+                            errorMessage.textContent = "Erreur de format de l'évaluation : " + parseError.message + ". Le contenu des questions n'est pas un JSON valide.";
+                            errorMessage.style.display = 'block';
+                            retryLoadBtn.style.display = 'block';
+                        }
+                    } else {
+                        errorMessage.textContent = "Évaluation introuvable pour ce code.";
+                        errorMessage.style.display = 'block';
+                        retryLoadBtn.style.display = 'block';
+                    }
+
+                } catch (generalError) {
+                    errorMessage.textContent = "Une erreur inattendue est survenue lors du chargement : " + generalError.message + ". Veuillez vérifier votre connexion.";
+                    errorMessage.style.display = 'block';
+                    retryLoadBtn.style.display = 'block';
+                    console.error("Erreur complète de chargement (catch général):", generalError);
+                } finally {
+                    loadingMessage.style.display = 'none';
+                }
+            }
+
+            function renderCurrentQuestion() {
+                evaluationForm.innerHTML = '';
+                if (currentEvaluationData.length === 0) return;
+
+                const q = currentEvaluationData[currentQuestionIndex];
+                const questionBlock = document.createElement('div');
+                questionBlock.classList.add('question-block');
+                questionBlock.innerHTML = `<h3>Question ${q.question_number || (currentQuestionIndex + 1)}:</h3><p>${q.question}</p>`; 
+
+                const questionIdentifier = `q${q.question_number || (currentQuestionIndex + 1)}`;
+
+                if (q.type === 'QCM' && q.options && Array.isArray(q.options)) {
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.classList.add('options');
+                    q.options.forEach((option, optIndex) => {
+                        const inputId = `${questionIdentifier}-opt${optIndex}`;
+                        const isChecked = userAnswers[questionIdentifier] === option;
+                        optionsDiv.innerHTML += `
+                            <label>
+                                <input type="radio" name="${questionIdentifier}" value="${option}" id="${inputId}" ${isChecked ? 'checked' : ''}>
+                                ${option}
+                            </label>
+                        `;
+                    });
+                    questionBlock.appendChild(optionsDiv);
+                    optionsDiv.addEventListener('change', (event) => {
+                        if (event.target.type === 'radio' && event.target.name === questionIdentifier) {
+                            userAnswers[questionIdentifier] = event.target.value;
+                        }
+                    });
+
+                } else if (q.type === 'short_answer') {
+                    const textarea = document.createElement('textarea');
+                    textarea.name = questionIdentifier;
+                    textarea.placeholder = "Votre réponse...";
+                    textarea.value = userAnswers[questionIdentifier] || '';
+                    questionBlock.appendChild(textarea);
+                    textarea.addEventListener('blur', () => {
+                        userAnswers[questionIdentifier] = textarea.value.trim();
+                    });
+                    textarea.addEventListener('input', () => {
+                        userAnswers[questionIdentifier] = textarea.value.trim();
+                    });
+                } else {
+                    questionBlock.innerHTML += `<p style="color:red;">Format de question non supporté ou incomplet.</p>`;
+                }
+                evaluationForm.appendChild(questionBlock);
+                updateNavButtons();
+            }
+
+            function navigateQuestions(direction) {
+                const currentQuestion = currentEvaluationData[currentQuestionIndex];
+                const questionIdentifier = `q${currentQuestion.question_number || (currentQuestionIndex + 1)}`; 
+                if (currentQuestion.type === 'short_answer') {
+                    const textarea = document.querySelector(`textarea[name="${questionIdentifier}"]`);
+                    if (textarea) userAnswers[questionIdentifier] = textarea.value.trim();
+                } else if (currentQuestion.type === 'QCM') {
+                    const selectedOption = document.querySelector(`input[name="${questionIdentifier}"]:checked`);
+                    userAnswers[questionIdentifier] = selectedOption ? selectedOption.value : '';
+                }
+
+                currentQuestionIndex += direction;
+                renderCurrentQuestion();
+            }
+
+            function updateNavButtons() {
+                prevBtn.style.display = currentQuestionIndex > 0 ? 'block' : 'none';
+                nextBtn.style.display = currentQuestionIndex < currentEvaluationData.length - 1 ? 'block' : 'none';
+                submitEvalBtn.style.display = currentQuestionIndex === currentEvaluationData.length - 1 ? 'block' : 'none';
+                questionNumberDisplay.textContent = `Question ${currentQuestionIndex + 1} / ${currentEvaluationData.length}`;
+            }
+
+            async function submitEvaluation() {
+                loadingMessage.textContent = "Correction et calcul du score...";
+                loadingMessage.style.display = 'block';
+                errorMessage.style.display = 'none';
+                submitEvalBtn.style.display = 'none';
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+                questionNumberDisplay.style.display = 'none';
+                evaluationForm.style.display = 'none';
+
+                scoreDisplay.style.display = 'none';
+                correctionFeedbackDiv.style.display = 'none';
+                feedbackContentDiv.innerHTML = '';
+
+                let score = 0;
+                let feedbackHtml = '';
+                
+                for (const q of currentEvaluationData) {
+                    const questionIdentifier = `q${q.question_number || (currentEvaluationData.indexOf(q) + 1)}`;
+                    const userAnswer = userAnswers[questionIdentifier] || '';
+
+                    feedbackHtml += `<div style="margin-bottom: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 10px;">
+                                        <p><strong>Question ${q.question_number || (currentEvaluationData.indexOf(q) + 1)}:</strong> ${q.question}</p>
+                                        <p>Votre réponse: <em>${userAnswer || "(aucune réponse)"}</em></p>`;
+
+                    if (q.type === 'QCM') {
+                        const isCorrect = (userAnswer === q.correct_answer);
+                        if (isCorrect) {
+                            score++;
+                            feedbackHtml += `<p class="feedback-correct">Correct !</p>`;
+                        } else {
+                            feedbackHtml += `<p class="feedback-incorrect">Incorrect. La bonne réponse était: <em>${q.correct_answer}</em></p>`;
+                        }
+                    } else if (q.type === 'short_answer') {
+                        const correctionResult = await correctShortAnswerWithAI(q.question, userAnswer, q.correct_answer);
+                        feedbackHtml += `<p>Correction de l'IA: <span class="${correctionResult.is_correct ? 'feedback-correct' : 'feedback-incorrect'}">${correctionResult.feedback}</span></p>`;
+                        if (correctionResult.is_correct) {
+                            score++;
+                        }
+                    }
+                    feedbackHtml += `</div>`;
+                }
+
+                const finalScore = score;
+                const totalQuestions = currentEvaluationData.length;
+
+                finalScoreSpan.textContent = finalScore;
+                totalQuestionsSpan.textContent = totalQuestions;
+                scoreDisplay.style.display = 'block';
+                feedbackContentDiv.innerHTML = feedbackHtml;
+                correctionFeedbackDiv.style.display = 'block';
+                loadingMessage.style.display = 'none';
+
+                // --- Sauvegarde du score dans Supabase (maintenue) ---
+                try {
+                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+                    if (sessionError) {
+                        console.error("Erreur lors de la récupération de la session pour la sauvegarde du score:", sessionError);
+                    } else if (session) {
+                        const userId = session.user.id;
+                        console.log("Utilisateur connecté pour la sauvegarde du score:", userId); 
+
+                        // Utilisation des noms de colonnes ajustés ici : total_evaluation et complete
+                        const { data: existingScores, error: fetchError } = await supabase
+                            .from('scores')
+                            .select('complete, total_evaluation, win_streak') // <-- Noms des colonnes ajustés
+                            .eq('user_id', userId)
+                            .single();
+
+                        if (fetchError && fetchError.code !== 'PGRST116') { 
+                            console.error("Erreur lors de la récupération des scores existants:", fetchError);
+                        }
+
+                        // Utilisation des noms de colonnes ajustés ici : total_evaluation et complete
+                        let newComplete = (existingScores?.complete || 0) + 1;
+                        let newTotalEvaluation = (existingScores?.total_evaluation || 0) + 1;
+                        let newWinStreak = (existingScores?.win_streak || 0);
+
+                        // Nouvelle logique pour le win_streak
+                        const passingThreshold = 0.7; // Seuil de réussite à 70%
+                        const percentageScore = (finalScore / totalQuestions);
+
+                        if (finalScore === totalQuestions) {
+                            newWinStreak++; // Score parfait : incrémente la série
+                        } else if (percentageScore < passingThreshold) {
+                            newWinStreak = 0; // Échec (en dessous du seuil) : réinitialise la série
+                        } 
+                        // Sinon (score non parfait mais > seuil de réussite), la série reste inchangée.
+
+                        // Utilisation des noms de colonnes ajustés ici : total_evaluation et complete
+                        const scoreData = {
+                            user_id: userId,
+                            complete: newComplete, // <-- Nom de colonne ajusté
+                            total_evaluation: newTotalEvaluation, // <-- Nom de colonne ajusté
+                            win_streak: newWinStreak
+                        };
+
+                        if (existingScores) {
+                            const { error: updateError } = await supabase
+                                .from('scores')
+                                .update(scoreData)
+                                .eq('user_id', userId);
+
+                            if (updateError) {
+                                console.error("Erreur lors de la mise à jour des scores:", updateError);
+                            } else {
+                                console.log("Scores mis à jour avec succès!");
+                            }
+                        } else {
+                            const { error: insertError } = await supabase
+                                .from('scores')
+                                .insert([scoreData]);
+
+                            if (insertError) {
+                                console.error("Erreur lors de l'insertion des scores:", insertError);
+                            } else {
+                                console.log("Nouveaux scores insérés avec succès!");
+                            }
+                        }
+                    } else {
+                        console.log("Aucun utilisateur connecté, scores non sauvegardés.");
+                    }
+                } catch (scoreSaveError) {
+                    console.error("Erreur générale lors de la sauvegarde du score:", scoreSaveError);
+                }
+                // --- Fin : Sauvegarde du score dans Supabase ---
+            }
+
+            async function correctShortAnswerWithAI(question, userAnswer, correctAnswer) {
+                // 🚨 URL de votre fonction serverless Vercel pour la CORRECTION 🚨
+                // REMPLACEZ VOTRE_NOM_DE_PROJET par le nom réel de votre projet Vercel
+                const OPENAI_CORRECTION_ENDPOINT = 'https://VOTRE_NOM_DE_PROJET.vercel.app/api/correct-answer'; 
+
+                // Vérification de l'endpoint pour s'assurer qu'il a été mis à jour
+                if (!OPENAI_CORRECTION_ENDPOINT || OPENAI_CORRECTION_ENDPOINT.includes('VOTRE_NOM_DE_PROJET')) {
+                    console.error("Erreur: L'endpoint du serveur backend pour la correction IA n'est pas configuré correctement. Veuillez remplacer 'VOTRE_NOM_DE_PROJET' par votre URL Vercel.");
+                    return { feedback: "Erreur: L'endpoint du serveur backend pour la correction IA n'est pas configuré correctement.", is_correct: false };
+                }
+
+                // Le payload envoyé au backend Vercel
+                const payloadToSendToBackend = {
+                    question,
+                    userAnswer,
+                    correctAnswer
+                };
+
+                try {
+                    // Appel à votre fonction serverless Vercel (qui utilisera la clé API sécurisée)
+                    const response = await fetch(OPENAI_CORRECTION_ENDPOINT, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // La clé API OpenAI est gérée de manière sécurisée par le backend Vercel, pas ici
+                        },
+                        body: JSON.stringify(payloadToSendToBackend)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`Erreur du serveur backend (${response.status}): ${errorData.error || response.statusText}`);
+                    }
+
+                    const result = await response.json(); // Le backend Vercel renvoie directement la réponse d'OpenAI
+                    const aiResponse = result.choices[0].message.content;
+
+                    const match = aiResponse.match(/\(Correct:\s*(true|false)\)/i);
+                    const isCorrect = match ? match[1].toLowerCase() === 'true' : false;
+                    const feedbackText = aiResponse.replace(/\(Correct:\s*(true|false)\)/i, '').trim();
+
+                    return { feedback: feedbackText, is_correct: isCorrect };
+
+                } catch (error) {
+                    console.error("Erreur lors de la correction par l'IA (via backend) :", error);
+                    return { feedback: "Erreur de correction IA : " + error.message, is_correct: false };
+                }
+            }
+        });
+    </script>
+</body>
+</html>
