@@ -1,70 +1,74 @@
  // api/correct-answer.js
-// Cette fonction corrige les réponses courtes via l'API OpenAI.
-
-// La clé API OpenAI est récupérée depuis les variables d'environnement de Vercel.
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OpenAI = require('openai');
 
 module.exports = async (req, res) => {
-    // Vérifie si la clé API OpenAI est configurée
-    if (!OPENAI_API_KEY) {
-        console.error("OPENAI_API_KEY n'est pas configurée dans les variables d'environnement Vercel.");
-        return res.status(500).json({ error: "Configuration du serveur manquante: Clé API OpenAI." });
+    // IMPORTANT: Ceci gère les en-têtes CORS.
+    // Pour un développement ou des démos, '*' est acceptable.
+    // Pour la production, il est plus sûr de spécifier l'URL exacte de votre frontend Vercel:
+    // res.setHeader('Access-Control-Allow-Origin', 'https://revisoo-app.vercel.app');
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Permet les requêtes depuis n'importe quelle origine
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS'); // Autorise les méthodes POST et OPTIONS
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Autorise les en-têtes Content-Type et Authorization
+
+    // Gérer les requêtes "preflight" OPTIONS
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
     }
 
-    // Seules les requêtes POST sont autorisées
+    // Assurez-vous que la méthode est POST
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Méthode non autorisée. Seul POST est accepté.' });
+        res.status(405).json({ error: 'Method Not Allowed' });
+        return;
     }
+
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+
+    if (!openaiApiKey) {
+        console.error("OPENAI_API_KEY n'est pas configurée dans les variables d'environnement Vercel.");
+        res.status(500).json({ error: "La clé API OpenAI n'est pas configurée sur le serveur." });
+        return;
+    }
+
+    const openai = new OpenAI({
+        apiKey: openaiApiKey,
+    });
 
     try {
-        // Récupère les données nécessaires à la correction depuis le frontend
         const { question, userAnswer, correctAnswer } = req.body;
 
-        // Validation basique
         if (!question || !userAnswer || !correctAnswer) {
-            return res.status(400).json({ error: 'Payload invalide. Les champs question, userAnswer et correctAnswer sont requis.' });
+            res.status(400).json({ error: 'Question, réponse de l\'utilisateur et bonne réponse sont requises.' });
+            return;
         }
 
-        const systemPrompt = "Vous êtes un correcteur d'évaluation juste et précis. Votre réponse doit être concise et terminer par (Correct: true) ou (Correct: false).";
-        const userPrompt = `Considérez la question suivante : "${question}". La réponse attendue est : "${correctAnswer}". L'utilisateur a répondu : "${userAnswer}".
-                            Évaluez la réponse de l'utilisateur. Si la réponse est correcte (même si la formulation est différente mais le sens est le même), dites "Correct !" et un bref feedback positif.
-                            Si la réponse est incorrecte, dites "Incorrect." et donnez un feedback concis expliquant pourquoi ou quelle était la bonne réponse.
-                            Indiquez si la réponse est correcte ou non en ajoutant à la fin de votre feedback un booléen sous cette forme (Correct: true) ou (Correct: false).`;
+        const prompt = `La question est : "${question}". La bonne réponse attendue est : "${correctAnswer}". La réponse de l'utilisateur est : "${userAnswer}".
+        Indiquez si la réponse de l'utilisateur est correcte ou non, et fournissez un bref feedback.
+        Terminez votre réponse par "(Correct: true)" si c'est correct ou "(Correct: false)" si c'est incorrect.
+        Exemple correct: "Votre réponse est parfaitement juste. (Correct: true)"
+        Exemple incorrect: "Votre réponse est incomplète. La bonne réponse est... (Correct: false)"
+        `;
 
-        const messages = [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-        ];
-
-        // Appel sécurisé à l'API OpenAI
-        const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}` // Utilisation sécurisée de la clé
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini",
-                messages,
-                max_tokens: 200
-            })
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4o-mini", // Utilisation de gpt-4o-mini pour la correction
+            messages: [
+                { role: "system", content: "Vous êtes un correcteur d'évaluation." },
+                { role: "user", content: prompt }
+            ],
+            max_tokens: 150
         });
 
-        // Gère les erreurs de la réponse OpenAI
-        if (!openaiResponse.ok) {
-            const errorData = await openaiResponse.json();
-            console.error("Erreur de l'API OpenAI (correction):", errorData);
-            return res.status(openaiResponse.status).json({
-                error: `Erreur de l'API OpenAI: ${errorData.error ? errorData.error.message : openaiResponse.statusText}`
-            });
-        }
-
-        // Renvoie la réponse d'OpenAI au frontend
-        const data = await openaiResponse.json();
-        res.status(200).json(data);
+        // La réponse complète d'OpenAI est renvoyée au frontend
+        res.status(200).json(completion);
 
     } catch (error) {
-        console.error("Erreur lors du traitement de la requête de correction Vercel:", error);
-        res.status(500).json({ error: 'Une erreur interne est survenue sur le serveur lors de la correction.' });
+        console.error('Erreur lors de l\'appel à l\'API OpenAI pour la correction:', error);
+        if (error.response) {
+            console.error('Statut de l\'erreur OpenAI:', error.response.status);
+            console.error('Données de l\'erreur OpenAI:', error.response.data);
+            res.status(error.response.status).json({ error: error.response.data });
+        } else {
+            res.status(500).json({ error: 'Une erreur interne est survenue lors de la communication avec OpenAI pour la correction.' });
+        }
     }
 };

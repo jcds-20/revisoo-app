@@ -1,59 +1,66 @@
  // api/generate-evaluation.js
-// Cette fonction génère des évaluations via l'API OpenAI.
-
-// La clé API OpenAI est récupérée depuis les variables d'environnement de Vercel.
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OpenAI = require('openai');
 
 module.exports = async (req, res) => {
-    // Vérifie si la clé API OpenAI est configurée
-    if (!OPENAI_API_KEY) {
-        console.error("OPENAI_API_KEY n'est pas configurée dans les variables d'environnement Vercel.");
-        return res.status(500).json({ error: "Configuration du serveur manquante: Clé API OpenAI." });
+    // IMPORTANT: Ceci gère les en-têtes CORS.
+    // Pour un développement ou des démos, '*' est acceptable.
+    // Pour la production, il est plus sûr de spécifier l'URL exacte de votre frontend Vercel:
+    // res.setHeader('Access-Control-Allow-Origin', 'https://revisoo-app.vercel.app');
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Permet les requêtes depuis n'importe quelle origine
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS'); // Autorise les méthodes POST et OPTIONS
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Autorise les en-têtes Content-Type et Authorization
+
+    // Gérer les requêtes "preflight" OPTIONS (envoyées automatiquement par le navigateur avant la requête réelle)
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
     }
 
-    // Seules les requêtes POST sont autorisées
+    // Assurez-vous que la méthode est POST pour la logique principale
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Méthode non autorisée. Seul POST est accepté.' });
+        res.status(405).json({ error: 'Method Not Allowed' });
+        return;
     }
+
+    // Vérification de la clé API OpenAI (récupérée de Vercel Environment Variables)
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+
+    if (!openaiApiKey) {
+        console.error("OPENAI_API_KEY n'est pas configurée dans les variables d'environnement Vercel.");
+        res.status(500).json({ error: "La clé API OpenAI n'est pas configurée sur le serveur." });
+        return;
+    }
+
+    const openai = new OpenAI({
+        apiKey: openaiApiKey,
+    });
 
     try {
-        // Récupère les données envoyées par votre frontend
         const { model, messages, max_tokens } = req.body;
 
-        // Validation basique des données reçues
-        if (!model || !messages || !Array.isArray(messages)) {
-            return res.status(400).json({ error: 'Payload invalide. Les champs model et messages sont requis.' });
+        if (!model || !messages) {
+            res.status(400).json({ error: 'Modèle et messages sont requis.' });
+            return;
         }
 
-        // Appel sécurisé à l'API OpenAI
-        const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}` // Utilisation sécurisée de la clé
-            },
-            body: JSON.stringify({
-                model,
-                messages,
-                max_tokens
-            })
+        const completion = await openai.chat.completions.create({
+            model: model,
+            messages: messages,
+            max_tokens: max_tokens || 2000, // Utilisez max_tokens fourni ou une valeur par défaut
+            response_format: { type: "json_object" } // Assurez-vous que le modèle retourne du JSON
         });
 
-        // Gère les erreurs de la réponse OpenAI
-        if (!openaiResponse.ok) {
-            const errorData = await openaiResponse.json();
-            console.error("Erreur de l'API OpenAI (génération):", errorData);
-            return res.status(openaiResponse.status).json({
-                error: `Erreur de l'API OpenAI: ${errorData.error ? errorData.error.message : openaiResponse.statusText}`
-            });
-        }
-
-        // Renvoie la réponse d'OpenAI au frontend
-        const data = await openaiResponse.json();
-        res.status(200).json(data);
+        // La réponse complète d'OpenAI est renvoyée au frontend
+        res.status(200).json(completion);
 
     } catch (error) {
-        console.error("Erreur lors du traitement de la requête de génération Vercel:", error);
-        res.status(500).json({ error: 'Une erreur interne est survenue sur le serveur lors de la génération.' });
+        console.error('Erreur lors de l\'appel à l\'API OpenAI:', error);
+        if (error.response) {
+            console.error('Statut de l\'erreur OpenAI:', error.response.status);
+            console.error('Données de l\'erreur OpenAI:', error.response.data);
+            res.status(error.response.status).json({ error: error.response.data });
+        } else {
+            res.status(500).json({ error: 'Une erreur interne est survenue lors de la communication avec OpenAI.' });
+        }
     }
 };
