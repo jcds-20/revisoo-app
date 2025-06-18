@@ -1,12 +1,11 @@
- !DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Passer l'Évaluation - revisoo</title>
+    <title>Passer l'Évaluation - Fluzy</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="/logo_app.jpg" type="image/jpeg">
-   <style>
+    <style>
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(to right, #f0f2f7, #bbdefb); /* Dégradé de bleu clair */
@@ -169,7 +168,7 @@
             font-weight: bold;
             color: #1a237e; /* Bleu très foncé */
             text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             display: none;
         }
 
@@ -262,14 +261,14 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-        // CLÉ SUPABASE ANON PUBLIC : C'est celle qui fonctionne déjà dans create_eval.html et autres pages
+        // CLÉ SUPABASE ANON PUBLIC : Utilisez la clé validée
         const supabaseUrl = 'https://hbnhxnwgyqgggwursrqm.supabase.co'; 
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhibmh4bndneXFnZ2d3dXJzcnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzNjcwNDIsImV4cCI6MjA2MTk0MzA0Mn0.-LCoZFwZgLTNq_0uF-wzU4K5f4gX5g4b0x7gX0R6d00'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhibmh4bndneXFnZ2d3dXJzcnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzNjcwNDIsImV4cCI6MjA2MTk0MzA0Mn0.-LCoZFwZgLTnRAzfq5Cu1kIod3sY69f47YcVVbkPPrg'; 
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         // 🚨 URL de votre fonction serverless Vercel pour la CORRECTION 🚨
-        // REMPLACEZ VOTRE_NOM_DE_PROJET par le nom de votre projet Vercel
-        const OPENAI_CORRECTION_ENDPOINT = 'https://revisoo-app.vercel.app/api/correct-answer'; 
+        // IMPORTANT : Utilisez MAINTENANT votre domaine personnalisé 'revisoo.com'
+        const OPENAI_CORRECTION_ENDPOINT = 'https://revisoo.com/api/correct-answer'; 
         
         // --- TRÈS IMPORTANT POUR LE DÉBOGAGE : Vérifiez ces logs dans la console du navigateur ---
         console.log("Supabase URL utilisée:", supabaseUrl);
@@ -596,8 +595,8 @@
 
             async function correctShortAnswerWithAI(question, userAnswer, correctAnswer) {
                 // 🚨 URL de votre fonction serverless Vercel pour la CORRECTION 🚨
-                // REMPLACEZ VOTRE_NOM_DE_PROJET par le nom réel de votre projet Vercel
-                const OPENAI_CORRECTION_ENDPOINT = 'https://VOTRE_NOM_DE_PROJET.vercel.app/api/correct-answer'; 
+                // IMPORTANT : Utilisez MAINTENANT votre domaine personnalisé 'revisoo.com'
+                const OPENAI_CORRECTION_ENDPOINT = 'https://revisoo.com/api/correct-answer'; 
 
                 // Vérification de l'endpoint pour s'assurer qu'il a été mis à jour
                 if (!OPENAI_CORRECTION_ENDPOINT || OPENAI_CORRECTION_ENDPOINT.includes('VOTRE_NOM_DE_PROJET')) {
