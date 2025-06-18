@@ -35,19 +35,44 @@ module.exports = async (req, res) => {
     try {
         const { model, messages, max_tokens } = req.body;
 
+        console.log('--- Début de l\'exécution de la fonction generate-evaluation.js ---');
+        console.log('Requête reçue (body):', JSON.stringify(req.body, null, 2)); // Log complet du corps de la requête
+        console.log('Modèle demandé:', model);
+        console.log('Messages envoyés à OpenAI (tronqué pour les images):');
+        // Log intelligent pour les messages afin de ne pas imprimer tout le Base64
+        const loggedMessages = messages.map(msg => {
+            if (msg.role === 'user' && Array.isArray(msg.content)) {
+                return {
+                    ...msg,
+                    content: msg.content.map(part => {
+                        if (part.type === 'image_url' && part.image_url && part.image_url.url) {
+                            return { type: 'image_url', image_url: { url: part.image_url.url.substring(0, 50) + '...' } };
+                        }
+                        return part;
+                    })
+                };
+            }
+            return msg;
+        });
+        console.log(JSON.stringify(loggedMessages, null, 2));
+        console.log('Max Tokens:', max_tokens);
+
         // Vérifier si le modèle et les messages sont présents dans la requête
         if (!model || !messages) {
+            console.error('Erreur 400: Modèle et messages sont requis.');
             res.status(400).json({ error: 'Modèle et messages sont requis.' });
             return;
         }
 
         // Appel à l'API OpenAI
+        console.log('Appel à l\'API OpenAI en cours...');
         const completion = await openai.chat.completions.create({
             model: model,
-            messages: messages,
+            messages: messages, // Cette variable 'messages' contient le texte et/ou les images Base64
             max_tokens: max_tokens || 2000,
             response_format: { type: "json_object" } // Demande à OpenAI de renvoyer un objet JSON
         });
+        console.log('Réponse reçue d\'OpenAI.');
 
         // Tenter d'extraire le contenu du message
         let rawContent = null;
@@ -55,7 +80,7 @@ module.exports = async (req, res) => {
             rawContent = completion.choices[0].message.content;
             console.log('Contenu message d\'OpenAI (rawContent):', rawContent); // Garde ce log crucial pour débogage futur
         } else {
-            console.warn('Format de réponse inattendu de l\'API OpenAI (structure).');
+            console.warn('Format de réponse inattendu de l\'API OpenAI (structure).', completion);
             res.status(500).json({ error: 'Format de réponse inattendu de l\'API OpenAI (structure).', completion: completion });
             return;
         }
@@ -64,9 +89,12 @@ module.exports = async (req, res) => {
         try {
             // Nettoyer le contenu si OpenAI ajoute des balises comme ```json
             const cleanContent = rawContent.replace(/```json\s*|```/g, '').trim();
+            console.log('Contenu nettoyé avant parsing:', cleanContent); // Log du contenu nettoyé
+
             const parsedApiResponse = JSON.parse(cleanContent);
+            console.log('Contenu JSON parsé:', parsedApiResponse); // Log du JSON parsé
             
-            // --- CORRECTION MAJEURE ICI : Cherche d'abord 'questions', puis 'evaluation' ---
+            // Cherche d'abord 'questions', puis 'evaluation'
             let evaluationData = parsedApiResponse.questions || parsedApiResponse.evaluation;
 
             if (!evaluationData) {
@@ -82,12 +110,10 @@ module.exports = async (req, res) => {
                 res.status(500).json({ error: "Le tableau d'évaluation de l'IA ne correspond pas au format attendu.", evaluationData: evaluationData });
                 return;
             }
-            // --- FIN DE LA CORRECTION ---
 
             // Réponse finale au frontend avec le tableau d'évaluation directement
-            // Le frontend attend un objet completion avec un champ message.content qui est une chaîne JSON.
-            // Donc, nous ré-stringifions le tableau evaluationData.
             res.status(200).json({ choices: [{ message: { content: JSON.stringify(evaluationData) } }] });
+            console.log('--- Fin de l\'exécution réussie ---');
 
         } catch (parseError) {
             console.error('ERREUR DE PARSING JSON:', parseError.message);
@@ -100,10 +126,15 @@ module.exports = async (req, res) => {
         if (error.response) {
             console.error('Statut de l\'erreur OpenAI:', error.response.status);
             console.error('Données de l\'erreur OpenAI:', error.response.data);
-            res.status(error.response.status).json({ error: error.response.data });
+            // Vérifier si l'erreur est liée à un contenu trop grand
+            if (error.response.status === 400 && error.response.data && error.response.data.error && error.response.data.error.code === 'content_too_large') {
+                res.status(400).json({ error: 'L\'image est trop grande ou le contenu total dépasse la limite. Veuillez essayer une image plus petite.' });
+            } else {
+                res.status(error.response.status).json({ error: error.response.data });
+            }
         } else {
             res.status(500).json({ error: 'Une erreur interne est survenue lors de la communication avec OpenAI: ' + error.message });
         }
+        console.log('--- Fin de l\'exécution avec erreur ---');
     }
 };
-
