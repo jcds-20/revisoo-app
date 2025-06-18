@@ -81,27 +81,43 @@ module.exports = async (req, res) => {
             const cleanContent = rawContent.replace(/```json\s*|```/g, '').trim();
             console.log('Contenu nettoyé avant parsing:', cleanContent); // Log le contenu après nettoyage
 
-            const parsedContent = JSON.parse(cleanContent);
+            const parsedApiResponse = JSON.parse(cleanContent);
             
-            console.log('Contenu JSON parsé:', JSON.stringify(parsedContent, null, 2));
+            // --- DÉBUT DE LA CORRECTION ---
+            // Le modèle renvoie un objet avec une clé "evaluation" contenant le tableau
+            // Nous devons extraire ce tableau avant de le valider
+            let evaluationData = parsedApiResponse.evaluation;
 
-            // Vérifier si le JSON parsé est un tableau valide d'évaluations
-            if (!Array.isArray(parsedContent) || parsedContent.length === 0 || 
-                !parsedContent[0] || !parsedContent[0].question || !parsedContent[0].type) { // Ajout de !parsedContent[0] pour plus de robustesse
-                console.error('ERREUR: Le JSON parsé ne correspond pas au format d\'évaluation attendu. Structure:', parsedContent);
-                res.status(500).json({ error: "Le JSON parsé ne correspond pas au format d'évaluation attendu.", parsedContent: parsedContent });
-                console.log('--- Fin de l\'exécution (JSON parsé incorrect) ---');
+            if (!evaluationData) {
+                console.error('ERREUR: La réponse parsée ne contient pas la clé "evaluation".', parsedApiResponse);
+                res.status(500).json({ error: "La réponse de l'IA n'a pas la structure attendue ('evaluation' manquante)." });
+                console.log('--- Fin de l\'exécution (clé "evaluation" manquante) ---');
                 return;
             }
 
+            // Maintenant, validation sur le tableau extrait
+            if (!Array.isArray(evaluationData) || evaluationData.length === 0 || 
+                !evaluationData[0] || !evaluationData[0].question || !evaluationData[0].type) {
+                console.error('ERREUR: Le tableau "evaluation" ne correspond pas au format d\'évaluation attendu. Structure:', evaluationData);
+                res.status(500).json({ error: "Le tableau 'evaluation' de l'IA ne correspond pas au format attendu.", evaluationData: evaluationData });
+                console.log('--- Fin de l\'exécution (tableau "evaluation" incorrect) ---');
+                return;
+            }
+            // --- FIN DE LA CORRECTION ---
+
+
+            console.log('Contenu JSON parsé et validé:', JSON.stringify(evaluationData, null, 2));
+
             // Réponse finale au frontend avec l'objet completion original
-            res.status(200).json(completion);
+            // Pour le frontend, nous allons maintenant envoyer evaluationData directement,
+            // car c'est ce que le frontend attend (le tableau de questions).
+            res.status(200).json({ choices: [{ message: { content: JSON.stringify(evaluationData) } }] });
             console.log('--- Fin de l\'exécution (succès) ---');
 
         } catch (parseError) {
             console.error('ERREUR DE PARSING JSON:', parseError.message);
-            console.error('Contenu qui a échoué au parsing (rawContent):', rawContent); // Affiche le contenu qui a causé l'erreur
-            console.error('Contenu nettoyé qui a échoué au parsing:', cleanContent); // Affiche le contenu nettoyé
+            console.error('Contenu qui a échoué au parsing (rawContent):', rawContent);
+            console.error('Contenu nettoyé qui a échoué au parsing:', cleanContent);
             res.status(500).json({ error: "Erreur lors de l'analyse de la réponse JSON de l'IA: " + parseError.message });
             console.log('--- Fin de l\'exécution (erreur de parsing JSON) ---');
         }
