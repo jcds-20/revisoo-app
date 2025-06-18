@@ -3,25 +3,19 @@ const OpenAI = require('openai');
 
 module.exports = async (req, res) => {
     // Configuration des en-têtes CORS pour permettre les requêtes depuis revisoo.com
-    res.setHeader('Access-Control-Allow-Origin', 'https://revisoo.com'); // Spécifie l'origine permise
+    res.setHeader('Access-Control-Allow-Origin', 'https://revisoo.com');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    console.log('--- Début de l\'exécution de la fonction generate-evaluation.js ---'); // Log au tout début
 
     // Gérer la requête OPTIONS (pré-vérification CORS)
     if (req.method === 'OPTIONS') {
         res.status(200).end();
-        console.log('Requête OPTIONS traitée.');
-        console.log('--- Fin de l\'exécution OPTIONS ---');
         return;
     }
 
     // S'assurer que seule la méthode POST est autorisée
     if (req.method !== 'POST') {
-        console.log('Méthode non autorisée:', req.method);
         res.status(405).json({ error: 'Method Not Allowed' });
-        console.log('--- Fin de l\'exécution (méthode non autorisée) ---');
         return;
     }
 
@@ -29,9 +23,8 @@ module.exports = async (req, res) => {
 
     // Vérifier si la clé API OpenAI est configurée
     if (!openaiApiKey) {
-        console.error("ERREUR CRITIQUE: OPENAI_API_KEY n'est pas configurée dans les variables d'environnement Vercel.");
+        console.error("ERREUR: OPENAI_API_KEY n'est pas configurée dans les variables d'environnement Vercel.");
         res.status(500).json({ error: "La clé API OpenAI n'est pas configurée sur le serveur." });
-        console.log('--- Fin de l\'exécution (clé API manquante) ---');
         return;
     }
 
@@ -44,13 +37,9 @@ module.exports = async (req, res) => {
 
         // Vérifier si le modèle et les messages sont présents dans la requête
         if (!model || !messages) {
-            console.log('ERREUR: Données manquantes dans le corps de la requête. Corps reçu:', req.body);
             res.status(400).json({ error: 'Modèle et messages sont requis.' });
-            console.log('--- Fin de l\'exécution (données manquantes) ---');
             return;
         }
-
-        console.log('Payload envoyé à OpenAI:', JSON.stringify({ model, messages, max_tokens }, null, 2));
 
         // Appel à l'API OpenAI
         const completion = await openai.chat.completions.create({
@@ -60,18 +49,14 @@ module.exports = async (req, res) => {
             response_format: { type: "json_object" } // Demande à OpenAI de renvoyer un objet JSON
         });
 
-        // Log la réponse brute d'OpenAI avant de la traiter
-        console.log('Réponse brute complète d\'OpenAI (completion object):', JSON.stringify(completion, null, 2));
-
         // Tenter d'extraire le contenu du message
         let rawContent = null;
         if (completion && completion.choices && completion.choices.length > 0 && completion.choices[0].message) {
             rawContent = completion.choices[0].message.content;
-            console.log('Contenu message d\'OpenAI (rawContent):', rawContent); // Log le contenu spécifique du message
+            console.log('Contenu message d\'OpenAI (rawContent):', rawContent); // Garde ce log crucial pour débogage futur
         } else {
-            console.warn('ATTENTION: Le format de réponse d\'OpenAI n\'est pas celui attendu dans completion.choices[0].message. completion:', completion);
+            console.warn('Format de réponse inattendu de l\'API OpenAI (structure).');
             res.status(500).json({ error: 'Format de réponse inattendu de l\'API OpenAI (structure).', completion: completion });
-            console.log('--- Fin de l\'exécution (format de réponse inattendu de l\'API OpenAI - structure) ---');
             return;
         }
 
@@ -79,47 +64,37 @@ module.exports = async (req, res) => {
         try {
             // Nettoyer le contenu si OpenAI ajoute des balises comme ```json
             const cleanContent = rawContent.replace(/```json\s*|```/g, '').trim();
-            console.log('Contenu nettoyé avant parsing:', cleanContent); // Log le contenu après nettoyage
-
             const parsedApiResponse = JSON.parse(cleanContent);
             
-            // --- DÉBUT DE LA CORRECTION ---
-            // Le modèle renvoie un objet avec une clé "evaluation" contenant le tableau
-            // Nous devons extraire ce tableau avant de le valider
-            let evaluationData = parsedApiResponse.evaluation;
+            // --- CORRECTION MAJEURE ICI ---
+            // Le modèle renvoie un objet avec une clé "questions" contenant le tableau
+            // Nous extrayons ce tableau.
+            let evaluationData = parsedApiResponse.questions;
 
             if (!evaluationData) {
-                console.error('ERREUR: La réponse parsée ne contient pas la clé "evaluation".', parsedApiResponse);
-                res.status(500).json({ error: "La réponse de l'IA n'a pas la structure attendue ('evaluation' manquante)." });
-                console.log('--- Fin de l\'exécution (clé "evaluation" manquante) ---');
+                console.error('ERREUR: La réponse parsée ne contient pas la clé "questions".', parsedApiResponse);
+                res.status(500).json({ error: "La réponse de l'IA n'a pas la structure attendue ('questions' manquante)." });
                 return;
             }
 
             // Maintenant, validation sur le tableau extrait
             if (!Array.isArray(evaluationData) || evaluationData.length === 0 || 
                 !evaluationData[0] || !evaluationData[0].question || !evaluationData[0].type) {
-                console.error('ERREUR: Le tableau "evaluation" ne correspond pas au format d\'évaluation attendu. Structure:', evaluationData);
-                res.status(500).json({ error: "Le tableau 'evaluation' de l'IA ne correspond pas au format attendu.", evaluationData: evaluationData });
-                console.log('--- Fin de l\'exécution (tableau "evaluation" incorrect) ---');
+                console.error('ERREUR: Le tableau "questions" ne correspond pas au format d\'évaluation attendu. Structure:', evaluationData);
+                res.status(500).json({ error: "Le tableau 'questions' de l'IA ne correspond pas au format attendu.", evaluationData: evaluationData });
                 return;
             }
             // --- FIN DE LA CORRECTION ---
 
-
-            console.log('Contenu JSON parsé et validé:', JSON.stringify(evaluationData, null, 2));
-
-            // Réponse finale au frontend avec l'objet completion original
-            // Pour le frontend, nous allons maintenant envoyer evaluationData directement,
-            // car c'est ce que le frontend attend (le tableau de questions).
+            // Réponse finale au frontend avec le tableau d'évaluation directement
+            // Le frontend attend un objet completion avec un champ message.content qui est une chaîne JSON.
+            // Donc, nous ré-stringifions le tableau evaluationData.
             res.status(200).json({ choices: [{ message: { content: JSON.stringify(evaluationData) } }] });
-            console.log('--- Fin de l\'exécution (succès) ---');
 
         } catch (parseError) {
             console.error('ERREUR DE PARSING JSON:', parseError.message);
             console.error('Contenu qui a échoué au parsing (rawContent):', rawContent);
-            console.error('Contenu nettoyé qui a échoué au parsing:', cleanContent);
             res.status(500).json({ error: "Erreur lors de l'analyse de la réponse JSON de l'IA: " + parseError.message });
-            console.log('--- Fin de l\'exécution (erreur de parsing JSON) ---');
         }
 
     } catch (error) {
@@ -131,6 +106,5 @@ module.exports = async (req, res) => {
         } else {
             res.status(500).json({ error: 'Une erreur interne est survenue lors de la communication avec OpenAI: ' + error.message });
         }
-        console.log('--- Fin de l\'exécution (erreur générale) ---');
     }
 };
