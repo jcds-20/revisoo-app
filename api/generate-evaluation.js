@@ -66,22 +66,20 @@ module.exports = async (req, res) => {
             const cleanContent = rawContent.replace(/```json\s*|```/g, '').trim();
             const parsedApiResponse = JSON.parse(cleanContent);
             
-            // --- CORRECTION MAJEURE ICI ---
-            // Le modèle renvoie un objet avec une clé "questions" contenant le tableau
-            // Nous extrayons ce tableau.
-            let evaluationData = parsedApiResponse.questions;
+            // --- CORRECTION MAJEURE ICI : Cherche d'abord 'questions', puis 'evaluation' ---
+            let evaluationData = parsedApiResponse.questions || parsedApiResponse.evaluation;
 
             if (!evaluationData) {
-                console.error('ERREUR: La réponse parsée ne contient pas la clé "questions".', parsedApiResponse);
-                res.status(500).json({ error: "La réponse de l'IA n'a pas la structure attendue ('questions' manquante)." });
+                console.error('ERREUR: La réponse parsée ne contient ni la clé "questions" ni la clé "evaluation".', parsedApiResponse);
+                res.status(500).json({ error: "La réponse de l'IA n'a pas la structure attendue (ni 'questions' ni 'evaluation' trouvée)." });
                 return;
             }
 
             // Maintenant, validation sur le tableau extrait
             if (!Array.isArray(evaluationData) || evaluationData.length === 0 || 
                 !evaluationData[0] || !evaluationData[0].question || !evaluationData[0].type) {
-                console.error('ERREUR: Le tableau "questions" ne correspond pas au format d\'évaluation attendu. Structure:', evaluationData);
-                res.status(500).json({ error: "Le tableau 'questions' de l'IA ne correspond pas au format attendu.", evaluationData: evaluationData });
+                console.error('ERREUR: Le tableau "questions" ou "evaluation" ne correspond pas au format d\'évaluation attendu. Structure:', evaluationData);
+                res.status(500).json({ error: "Le tableau d'évaluation de l'IA ne correspond pas au format attendu.", evaluationData: evaluationData });
                 return;
             }
             // --- FIN DE LA CORRECTION ---
@@ -108,3 +106,4 @@ module.exports = async (req, res) => {
         }
     }
 };
+
