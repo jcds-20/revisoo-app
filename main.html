@@ -1,7 +1,6 @@
  <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <link rel="icon" href="/favicon.png" type="image/png">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Accueil - Revisoo</title>
@@ -30,19 +29,17 @@
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     }
 
-    .no-evals {
-      font-size: 18px;
-      color: #666;
-      margin-bottom: 20px;
-    }
-
     .button-container {
       margin-top: 30px;
+      display: flex; /* Utilisation de Flexbox pour aligner les boutons */
+      justify-content: center; /* Centrer les boutons horizontalement */
+      gap: 20px; /* Espacement entre les boutons */
+      flex-wrap: wrap; /* Permet aux boutons de passer à la ligne sur petits écrans */
     }
 
     .action-btn {
       padding: 12px 20px;
-      margin: 10px;
+      margin: 0; /* Réinitialiser les marges si utilisant gap */
       background-color: #4CAF50;
       color: white;
       border: none;
@@ -80,7 +77,7 @@
       color: #666;
     }
 
-    /* Messages de "Bientôt" */
+    /* Messages de "Bientôt" (seulement pour Espace Prof maintenant) */
     .message-bientot {
       display: none;
       font-size: 18px;
@@ -95,70 +92,157 @@
       color: #888;
     }
 
-    .space-prof,
-    .space-eleve {
+    .footer-link { /* Classe générique pour les liens dans le footer */
       cursor: pointer;
       font-weight: bold;
       color: #4CAF50;
+      transition: color 0.3s ease;
+    }
+    .footer-link:hover {
+        color: #45a049;
+    }
+
+    /* Style spécifique pour le message de suspense des scores */
+    #scoresStatusMessage {
+      margin-top: 20px;
+      font-size: 1.1em;
+      color: #007bff; /* Bleu clair pour le message de scores */
+      font-weight: bold;
+      display: none; /* Masqué par défaut */
+      padding: 10px;
+      background-color: #e6f7ff;
+      border-radius: 8px;
+      border: 1px solid #91d5ff;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+        .button-container {
+            flex-direction: column;
+            gap: 10px;
+        }
     }
   </style>
-  <!-- Favicon mis à jour ici -->
+  <!-- Favicon unique et correct -->
   <link rel="icon" href="/favicon.png" type="image/png">
 </head>
 <body>
 
-  <h1>Home</h1>
+  <h1>Accueil Revisoo</h1>
 
   <div class="container">
-    <!-- Le message "Vous n'avez rejoint ni créé aucune évaluation pour le moment." a été retiré. -->
-
     <!-- Boutons pour créer ou rejoindre une évaluation -->
     <div class="button-container">
-      <!-- Bouton "Créer une évaluation" redirige vers create_eval.html -->
       <button class="action-btn" onclick="goToCreateEvaluation()">Créer une évaluation</button>
-      <!-- Bouton "Rejoindre une évaluation" redirige vers join_eval.html -->
       <button class="action-btn" onclick="goToJoinEvaluation()">Rejoindre une évaluation</button>
     </div>
+
+    <!-- Message dynamique pour le statut des scores -->
+    <div id="scoresStatusMessage"></div>
 
     <!-- Section "Bientôt..." pour l'Espace Prof -->
     <div id="message-prof-bientot" class="message-bientot">
       Espace Prof bientôt disponible...
-    </div>
-
-    <!-- Section "Bientôt..." pour les Scores -->
-    <div id="message-scores-bientot" class="message-bientot">
-      Mes Scores bientôt disponibles...
     </div>
   </div>
 
   <!-- Espace en bas -->
   <div class="footer">
     <div class="small-text">
-      <span class="space-prof" onclick="handleFooterLink('prof')">Espace Prof</span> |
-      <!-- Le lien "Mes Scores" affiche maintenant le message "Bientôt disponible" -->
-      <span class="space-eleve" onclick="handleFooterLink('scores')">Mes Scores</span>
-      <!-- Le bouton "Profil" a été supprimé -->
+      <span class="footer-link" onclick="handleFooterLink('prof')">Espace Prof</span> |
+      <span class="footer-link" id="scoresLink">Mes Scores</span>
     </div>
 
     <span class="small-text">© 2025 Revisoo - Toutes les évaluations disparaîtront après 7 jours</span>
   </div>
 
-  <script>
-    // Fonction pour gérer les clics sur les liens du footer (Espace Prof, Mes Scores)
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    // REMPLACEZ CES VALEURS par l'URL de votre projet Supabase et votre clé "Anon Public"
+    const supabaseUrl = 'https://hbnhxnwgyqgggwursrqm.supabase.co'; 
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhibmh4bndneXFnZ2d3dXJzcnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzNjcwNDIsImV4cCI6MjA2MTk0MzA0Mn0.-LCoZFwZgLTnRAzfq5Cu1kIod3sY69f47YcVVbkPPrg'; 
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const scoresLink = document.getElementById('scoresLink');
+        const scoresStatusMessageDiv = document.getElementById('scoresStatusMessage');
+        const messageProf = document.getElementById('message-prof-bientot');
+
+        // Initialisation de l'affichage
+        scoresLink.style.cursor = 'wait'; // Indique que c'est en cours de chargement
+        scoresStatusMessageDiv.style.display = 'none'; // Masque le message au début
+
+        // Vérifier l'état de connexion de l'utilisateur
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError || !session) {
+            // Utilisateur non connecté
+            scoresStatusMessageDiv.textContent = "Connectez-vous pour débloquer vos statistiques secrètes et suivre vos progrès sur Revisoo !";
+            scoresStatusMessageDiv.style.display = 'block';
+            scoresLink.style.cursor = 'pointer'; // Le lien est cliquable pour aller à la page de connexion
+            scoresLink.onclick = () => window.location.href = 'login.html'; // Redirige vers la page de connexion
+        } else {
+            // Utilisateur connecté, vérifier s'il a des scores
+            const userId = session.user.id;
+            try {
+                const { data: scoresData, error: scoresError } = await supabase
+                    .from('scores')
+                    .select('complete')
+                    .eq('user_id', userId)
+                    .single();
+
+                if (scoresError && scoresError.code === 'PGRST116') {
+                    // Aucun score trouvé pour cet utilisateur (PGRST116 signifie "pas de ligne trouvée")
+                    scoresStatusMessageDiv.textContent = "Passez votre première évaluation pour révéler vos scores et commencer votre ascension !";
+                    scoresStatusMessageDiv.style.display = 'block';
+                    scoresLink.style.cursor = 'default'; // Pas cliquable, car rien à montrer
+                    scoresLink.onclick = null; // Désactive le clic sur le lien
+                    scoresLink.style.color = '#666'; // Rend le lien gris et moins actif
+                } else if (scoresError) {
+                    console.error("Erreur lors de la récupération des scores:", scoresError);
+                    scoresStatusMessageDiv.textContent = "Erreur lors du chargement de vos scores. Veuillez réessayer plus tard.";
+                    scoresStatusMessageDiv.style.display = 'block';
+                    scoresLink.style.cursor = 'default';
+                    scoresLink.onclick = null;
+                    scoresLink.style.color = '#666';
+                } else if (scoresData && scoresData.complete > 0) {
+                    // L'utilisateur a des scores !
+                    scoresStatusMessageDiv.textContent = "Vos progrès secrets vous attendent... Cliquez pour découvrir vos statistiques !";
+                    scoresStatusMessageDiv.style.display = 'block';
+                    scoresLink.style.cursor = 'pointer'; // Le lien est cliquable
+                    scoresLink.onclick = () => window.location.href = 'my_scores.html'; // Redirige vers la future page de scores
+                } else {
+                    // Cas où data est vide mais pas d'erreur PGRST116 (ex: complete est 0)
+                    scoresStatusMessageDiv.textContent = "Passez votre première évaluation pour révéler vos scores et commencer votre ascension !";
+                    scoresStatusMessageDiv.style.display = 'block';
+                    scoresLink.style.cursor = 'default';
+                    scoresLink.onclick = null;
+                    scoresLink.style.color = '#666';
+                }
+            } catch (error) {
+                console.error("Erreur inattendue lors de la vérification des scores:", error);
+                scoresStatusMessageDiv.textContent = "Une erreur est survenue lors de la vérification de vos scores. Veuillez réessayer.";
+                scoresStatusMessageDiv.style.display = 'block';
+                scoresLink.style.cursor = 'default';
+                scoresLink.onclick = null;
+                scoresLink.style.color = '#666';
+            }
+        }
+        scoresLink.style.cursor = 'pointer'; // Rétablit le curseur par défaut après le chargement
+    });
+
+
+    // Fonction pour gérer les clics sur les liens du footer (Espace Prof)
     function handleFooterLink(section) {
       const messageProf = document.getElementById('message-prof-bientot');
-      const messageScores = document.getElementById('message-scores-bientot');
 
       // Cache tous les messages par défaut
       messageProf.style.display = 'none';
-      messageScores.style.display = 'none';
 
       if (section === 'prof') {
         // Affiche le message "Bientôt disponible" pour l'Espace Prof
         messageProf.style.display = 'block';
-      } else if (section === 'scores') {
-        // Affiche le message "Bientôt disponible" pour les Scores
-        messageScores.style.display = 'block';
       }
     }
 
