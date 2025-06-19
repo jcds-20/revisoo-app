@@ -4,146 +4,196 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Accueil - Revisoo</title>
+  <!-- Nouvelle police calligraphique pour le titre -->
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Favicon unique et correct -->
+  <link rel="icon" href="/favicon.png" type="image/png">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #ff7e5f, #feb47b);
+      /* Nouveau dégradé bleu-vert */
+      background: linear-gradient(45deg, #87CEEB, #20B2AA); /* Sky Blue to Light Sea Green */
       margin: 0;
       padding: 20px;
       color: #333;
+      font-family: 'Inter', sans-serif; /* Police principale */
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between; /* Pour pousser le footer en bas */
+      box-sizing: border-box;
     }
 
     h1 {
+      font-family: 'Great Vibes', cursive; /* Police calligraphique pour le titre */
       text-align: center;
-      color: white;
+      color: #f1faee; /* Couleur claire pour le texte du titre */
       margin-bottom: 40px;
+      font-size: 4em; /* Grande taille pour le titre */
+      text-shadow: 3px 3px 6px rgba(0,0,0,0.3); /* Ombre plus prononcée */
+      white-space: nowrap; /* Empêche le titre de se casser sur plusieurs lignes */
     }
 
     .container {
       max-width: 900px;
       margin: auto;
-      padding: 20px;
+      padding: 30px;
       text-align: center;
-      background-color: rgba(255, 255, 255, 0.8);
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      background-color: rgba(255, 255, 255, 0.95); /* Plus opaque */
+      border-radius: 15px; /* Bords plus arrondis */
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      flex-grow: 1; /* Permet au container de prendre de l'espace disponible */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .button-container {
       margin-top: 30px;
-      display: flex; /* Utilisation de Flexbox pour aligner les boutons */
-      justify-content: center; /* Centrer les boutons horizontalement */
-      gap: 20px; /* Espacement entre les boutons */
-      flex-wrap: wrap; /* Permet aux boutons de passer à la ligne sur petits écrans */
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
     }
 
     .action-btn {
-      padding: 12px 20px;
-      margin: 0; /* Réinitialiser les marges si utilisant gap */
+      padding: 15px 25px; /* Plus grand */
+      margin: 0;
       background-color: #4CAF50;
       color: white;
       border: none;
-      border-radius: 5px;
-      font-size: 16px;
+      border-radius: 8px; /* Bords plus arrondis */
+      font-size: 1.1em;
       cursor: pointer;
-      transition: background-color 0.3s;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Ombre pour les boutons */
     }
 
     .action-btn:hover {
       background-color: #45a049;
+      transform: translateY(-2px);
     }
 
-    /* Espace en bas */
     .footer {
       margin-top: 40px;
       font-size: 14px;
-      color: white;
+      color: #f1faee; /* Couleur claire pour le footer */
       text-align: center;
+      width: 100%;
+      padding: 10px 0;
     }
 
-    .footer a {
-      color: #4CAF50;
-      text-decoration: none;
+    .footer .small-text {
+      font-size: 14px; /* Un peu plus grand pour lisibilité */
+      color: #e0f2f7; /* Couleur plus claire pour le texte */
+      display: flex; /* Flexbox pour les liens du footer */
+      flex-direction: column; /* Alignement vertical */
+      gap: 10px; /* Espacement entre les liens */
+      align-items: center; /* Centrer horizontalement */
+      margin-bottom: 15px;
     }
 
-    .footer a:hover {
-      text-decoration: underline;
-    }
-
-    /* Petite taille pour les sections en bas */
-    .small-text {
-      font-size: 12px;
-      color: #888;
-    }
-
-    .footer-link { /* Classe générique pour les liens dans le footer */
+    .footer-link {
       cursor: pointer;
       font-weight: bold;
-      color: #4CAF50;
-      transition: color 0.3s ease;
+      color: #a7ffeb; /* Vert clair vibrant pour les liens du footer */
+      text-decoration: none; /* Pas de soulignement par défaut */
+      transition: color 0.3s ease, transform 0.2s ease;
     }
     .footer-link:hover {
-        color: #45a049;
+        color: #64ffda; /* Vert encore plus clair au survol */
+        transform: translateY(-1px);
+        text-decoration: underline; /* Soulignement au survol */
     }
 
     /* Conteneur pour tous les messages (scores et prof) */
     .messages-section {
-        margin-top: 20px;
-        padding: 15px;
-        background-color: #f0f8ff; /* Bleu très clair */
-        border-radius: 10px;
-        border: 1px solid #cceeff;
+        margin-top: 30px; /* Plus d'espace */
+        padding: 20px; /* Plus de padding */
+        background-color: #e0f7fa; /* Bleu très clair */
+        border-radius: 12px; /* Bords plus arrondis */
+        border: 1px solid #b2ebf2;
         display: flex;
         flex-direction: column;
-        gap: 15px; /* Espacement entre les messages */
+        gap: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Légère ombre */
     }
 
     /* Style spécifique pour le message de suspense des scores */
     #scoresStatusMessage {
-      font-size: 1.1em;
-      color: #007bff; /* Bleu clair pour le message de scores */
+      font-size: 1.2em; /* Plus grand */
+      color: #007bff;
       font-weight: bold;
-      display: none; /* Masqué par défaut */
+      display: none;
     }
 
     /* Style spécifique pour le message Espace Prof */
     #profSoonMessage {
-      font-size: 1.1em;
-      color: #ff5722; /* Orange pour le message Prof */
+      font-size: 1.2em;
+      color: #ff5722;
       font-weight: bold;
-      display: none; /* Masqué par défaut */
+      display: none;
     }
 
-
     /* Responsive adjustments */
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 3em;
+        }
+        .container {
+            padding: 25px;
+        }
+        .action-btn {
+            padding: 12px 20px;
+            font-size: 1em;
+        }
+        .footer .small-text {
+            font-size: 12px;
+        }
+        .messages-section {
+            padding: 15px;
+            gap: 10px;
+        }
+        #scoresStatusMessage, #profSoonMessage {
+            font-size: 1em;
+        }
+    }
+    @media (max-width: 480px) {
+        h1 {
+            font-size: 2.2em;
+        }
+        .container {
+            padding: 20px;
+        }
         .button-container {
             flex-direction: column;
             gap: 10px;
         }
     }
   </style>
-  <link rel="icon" href="/favicon.png" type="image/png">
 </head>
 <body>
 
   <h1>Accueil Revisoo</h1>
 
   <div class="container">
+    <!-- Boutons pour créer ou rejoindre une évaluation -->
     <div class="button-container">
       <button class="action-btn" id="createEvalBtn">Créer une évaluation</button>
       <button class="action-btn" id="joinEvalBtn">Rejoindre une évaluation</button>
     </div>
 
+    <!-- Section pour afficher les messages (scores et prof) -->
     <div class="messages-section">
         <div id="scoresStatusMessage"></div>
         <div id="profSoonMessage">Espace Prof bientôt disponible...</div>
     </div>
   </div>
 
+  <!-- Espace en bas -->
   <div class="footer">
     <div class="small-text">
-      <span class="footer-link" id="profLink">Espace Prof</span> |
+      <span class="footer-link" id="profLink">Espace Prof</span>
       <span class="footer-link" id="scoresLink">Mes Scores</span>
     </div>
 
@@ -155,7 +205,7 @@
 
     // REMPLACEZ CES VALEURS par l'URL de votre projet Supabase et votre clé "Anon Public"
     const supabaseUrl = 'https://hbnhxnwgyqgggwursrqm.supabase.co'; 
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhibmh4bndneXFnZ2d3dXJzcnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzNjcwNDIsImV4cCI6MjA2MTk0MzA0Mn0.-LCoZFwZgLTnRAzfq5Cu1kIod3sY69f47YcVVbkPPrg'; 
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhibmh4bndneXFnZ2d3dXJzcnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzNjcwNDIsImV4cCI6MjA2MTk0MzA0Mn0.-LCoZFwZgLTnRAzfq5Cu1kIod3sY69f47YcVVbkPPrG'; 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -178,19 +228,28 @@
         // Gérer le clic sur "Espace Prof"
         profLink.addEventListener('click', () => {
             scoresStatusMessageDiv.style.display = 'none'; // Cacher l'autre message
+            profSoonMessageDiv.textContent = 'Espace Prof bientôt disponible. Restez connecté(e) pour les mises à jour !';
             profSoonMessageDiv.style.display = 'block'; // Afficher le message "Prof bientôt"
         });
 
-        // Vérifier l'état de connexion de l'utilisateur pour les scores
+        // Gérer le clic sur "Mes Scores"
+        scoresLink.addEventListener('click', () => {
+            profSoonMessageDiv.style.display = 'none'; // Cacher l'autre message
+            scoresStatusMessageDiv.textContent = 'Mes scores sont bientôt disponibles ! Ne vous inquiétez pas, toutes vos performances sont enregistrées en toute sécurité.';
+            scoresStatusMessageDiv.style.display = 'block'; // Afficher le message spécifique aux scores
+            // Pas de redirection vers my_scores.html pour l'instant, comme demandé.
+        });
+
+
+        // Logique de chargement initial pour le message de statut des scores
+        // Cette section NE DOIT PAS afficher d'erreur visible si la récupération échoue,
+        // mais plutôt un message général ou un fallback.
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError || !session) {
             // Utilisateur non connecté
             scoresStatusMessageDiv.textContent = "Connectez-vous pour débloquer vos statistiques secrètes et suivre vos progrès sur Revisoo !";
             scoresStatusMessageDiv.style.display = 'block';
-            scoresLink.style.cursor = 'pointer'; 
-            scoresLink.onclick = () => window.location.href = 'login.html'; 
-            scoresLink.style.color = '#4CAF50'; // Assurez une couleur active
         } else {
             // Utilisateur connecté, vérifier s'il a des scores
             const userId = session.user.id;
@@ -205,38 +264,24 @@
                     // Aucun score trouvé pour cet utilisateur
                     scoresStatusMessageDiv.textContent = "Passez votre première évaluation pour révéler vos scores et commencer votre ascension !";
                     scoresStatusMessageDiv.style.display = 'block';
-                    scoresLink.style.cursor = 'default'; 
-                    scoresLink.onclick = null; 
-                    scoresLink.style.color = '#666'; // Rendre le lien gris et inactif
                 } else if (scoresError) {
-                    console.error("Erreur lors de la récupération des scores:", scoresError);
-                    scoresStatusMessageDiv.textContent = "Erreur lors du chargement de vos scores. Veuillez réessayer plus tard.";
+                    // Autre erreur lors de la récupération des scores, afficher un message non alarmant
+                    console.error("Erreur technique lors de la récupération des scores:", scoresError); // Pour le débogage console
+                    scoresStatusMessageDiv.textContent = "Une information sur vos scores n'a pas pu être chargée actuellement. Vos performances restent enregistrées en arrière-plan.";
                     scoresStatusMessageDiv.style.display = 'block';
-                    scoresLink.style.cursor = 'default';
-                    scoresLink.onclick = null;
-                    scoresLink.style.color = '#666';
                 } else if (scoresData && scoresData.complete > 0) {
                     // L'utilisateur a des scores !
-                    scoresStatusMessageDiv.textContent = "Vos progrès secrets vous attendent... Cliquez pour découvrir vos statistiques !";
+                    scoresStatusMessageDiv.textContent = "Vos progrès secrets vous attendent... Cliquez sur 'Mes Scores' pour le découvrir bientôt !";
                     scoresStatusMessageDiv.style.display = 'block';
-                    scoresLink.style.cursor = 'pointer'; 
-                    scoresLink.onclick = () => window.location.href = 'my_scores.html'; // Redirige vers la future page de scores
-                    scoresLink.style.color = '#4CAF50'; // Assurer une couleur active
                 } else {
                     // Cas où data est vide mais pas d'erreur PGRST116 (ex: complete est 0)
                     scoresStatusMessageDiv.textContent = "Passez votre première évaluation pour révéler vos scores et commencer votre ascension !";
                     scoresStatusMessageDiv.style.display = 'block';
-                    scoresLink.style.cursor = 'default';
-                    scoresLink.onclick = null;
-                    scoresLink.style.color = '#666';
                 }
             } catch (error) {
-                console.error("Erreur inattendue lors de la vérification des scores:", error);
-                scoresStatusMessageDiv.textContent = "Une erreur est survenue lors de la vérification de vos scores. Veuillez réessayer.";
+                console.error("Erreur inattendue lors de la vérification des scores au chargement:", error);
+                scoresStatusMessageDiv.textContent = "Une information sur vos scores n'a pas pu être chargée actuellement. Vos performances restent enregistrées en arrière-plan.";
                 scoresStatusMessageDiv.style.display = 'block';
-                scoresLink.style.cursor = 'default';
-                scoresLink.onclick = null;
-                scoresLink.style.color = '#666';
             }
         }
     });
