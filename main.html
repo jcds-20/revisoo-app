@@ -70,22 +70,6 @@
       text-decoration: underline;
     }
 
-    .footer span {
-      display: block;
-      margin-top: 10px;
-      font-size: 12px;
-      color: #666;
-    }
-
-    /* Messages de "Bientôt" (seulement pour Espace Prof maintenant) */
-    .message-bientot {
-      display: none;
-      font-size: 18px;
-      color: #ff5722;
-      margin-top: 20px;
-      font-weight: bold;
-    }
-
     /* Petite taille pour les sections en bas */
     .small-text {
       font-size: 12px;
@@ -102,18 +86,34 @@
         color: #45a049;
     }
 
+    /* Conteneur pour tous les messages (scores et prof) */
+    .messages-section {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f0f8ff; /* Bleu très clair */
+        border-radius: 10px;
+        border: 1px solid #cceeff;
+        display: flex;
+        flex-direction: column;
+        gap: 15px; /* Espacement entre les messages */
+    }
+
     /* Style spécifique pour le message de suspense des scores */
     #scoresStatusMessage {
-      margin-top: 20px;
       font-size: 1.1em;
       color: #007bff; /* Bleu clair pour le message de scores */
       font-weight: bold;
       display: none; /* Masqué par défaut */
-      padding: 10px;
-      background-color: #e6f7ff;
-      border-radius: 8px;
-      border: 1px solid #91d5ff;
     }
+
+    /* Style spécifique pour le message Espace Prof */
+    #profSoonMessage {
+      font-size: 1.1em;
+      color: #ff5722; /* Orange pour le message Prof */
+      font-weight: bold;
+      display: none; /* Masqué par défaut */
+    }
+
 
     /* Responsive adjustments */
     @media (max-width: 600px) {
@@ -123,7 +123,6 @@
         }
     }
   </style>
-  <!-- Favicon unique et correct -->
   <link rel="icon" href="/favicon.png" type="image/png">
 </head>
 <body>
@@ -131,25 +130,20 @@
   <h1>Accueil Revisoo</h1>
 
   <div class="container">
-    <!-- Boutons pour créer ou rejoindre une évaluation -->
     <div class="button-container">
-      <button class="action-btn" onclick="goToCreateEvaluation()">Créer une évaluation</button>
-      <button class="action-btn" onclick="goToJoinEvaluation()">Rejoindre une évaluation</button>
+      <button class="action-btn" id="createEvalBtn">Créer une évaluation</button>
+      <button class="action-btn" id="joinEvalBtn">Rejoindre une évaluation</button>
     </div>
 
-    <!-- Message dynamique pour le statut des scores -->
-    <div id="scoresStatusMessage"></div>
-
-    <!-- Section "Bientôt..." pour l'Espace Prof -->
-    <div id="message-prof-bientot" class="message-bientot">
-      Espace Prof bientôt disponible...
+    <div class="messages-section">
+        <div id="scoresStatusMessage"></div>
+        <div id="profSoonMessage">Espace Prof bientôt disponible...</div>
     </div>
   </div>
 
-  <!-- Espace en bas -->
   <div class="footer">
     <div class="small-text">
-      <span class="footer-link" onclick="handleFooterLink('prof')">Espace Prof</span> |
+      <span class="footer-link" id="profLink">Espace Prof</span> |
       <span class="footer-link" id="scoresLink">Mes Scores</span>
     </div>
 
@@ -166,22 +160,37 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         const scoresLink = document.getElementById('scoresLink');
+        const profLink = document.getElementById('profLink');
         const scoresStatusMessageDiv = document.getElementById('scoresStatusMessage');
-        const messageProf = document.getElementById('message-prof-bientot');
+        const profSoonMessageDiv = document.getElementById('profSoonMessage'); // Nouveau ID pour le message prof
 
-        // Initialisation de l'affichage
-        scoresLink.style.cursor = 'wait'; // Indique que c'est en cours de chargement
-        scoresStatusMessageDiv.style.display = 'none'; // Masque le message au début
+        const createEvalBtn = document.getElementById('createEvalBtn');
+        const joinEvalBtn = document.getElementById('joinEvalBtn');
 
-        // Vérifier l'état de connexion de l'utilisateur
+        // Ajout des écouteurs d'événements pour les boutons principaux
+        createEvalBtn.addEventListener('click', () => window.location.href = 'create_eval.html');
+        joinEvalBtn.addEventListener('click', () => window.location.href = 'join_eval.html');
+
+        // Masquer tous les messages au démarrage
+        scoresStatusMessageDiv.style.display = 'none';
+        profSoonMessageDiv.style.display = 'none';
+
+        // Gérer le clic sur "Espace Prof"
+        profLink.addEventListener('click', () => {
+            scoresStatusMessageDiv.style.display = 'none'; // Cacher l'autre message
+            profSoonMessageDiv.style.display = 'block'; // Afficher le message "Prof bientôt"
+        });
+
+        // Vérifier l'état de connexion de l'utilisateur pour les scores
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError || !session) {
             // Utilisateur non connecté
             scoresStatusMessageDiv.textContent = "Connectez-vous pour débloquer vos statistiques secrètes et suivre vos progrès sur Revisoo !";
             scoresStatusMessageDiv.style.display = 'block';
-            scoresLink.style.cursor = 'pointer'; // Le lien est cliquable pour aller à la page de connexion
-            scoresLink.onclick = () => window.location.href = 'login.html'; // Redirige vers la page de connexion
+            scoresLink.style.cursor = 'pointer'; 
+            scoresLink.onclick = () => window.location.href = 'login.html'; 
+            scoresLink.style.color = '#4CAF50'; // Assurez une couleur active
         } else {
             // Utilisateur connecté, vérifier s'il a des scores
             const userId = session.user.id;
@@ -193,12 +202,12 @@
                     .single();
 
                 if (scoresError && scoresError.code === 'PGRST116') {
-                    // Aucun score trouvé pour cet utilisateur (PGRST116 signifie "pas de ligne trouvée")
+                    // Aucun score trouvé pour cet utilisateur
                     scoresStatusMessageDiv.textContent = "Passez votre première évaluation pour révéler vos scores et commencer votre ascension !";
                     scoresStatusMessageDiv.style.display = 'block';
-                    scoresLink.style.cursor = 'default'; // Pas cliquable, car rien à montrer
-                    scoresLink.onclick = null; // Désactive le clic sur le lien
-                    scoresLink.style.color = '#666'; // Rend le lien gris et moins actif
+                    scoresLink.style.cursor = 'default'; 
+                    scoresLink.onclick = null; 
+                    scoresLink.style.color = '#666'; // Rendre le lien gris et inactif
                 } else if (scoresError) {
                     console.error("Erreur lors de la récupération des scores:", scoresError);
                     scoresStatusMessageDiv.textContent = "Erreur lors du chargement de vos scores. Veuillez réessayer plus tard.";
@@ -210,8 +219,9 @@
                     // L'utilisateur a des scores !
                     scoresStatusMessageDiv.textContent = "Vos progrès secrets vous attendent... Cliquez pour découvrir vos statistiques !";
                     scoresStatusMessageDiv.style.display = 'block';
-                    scoresLink.style.cursor = 'pointer'; // Le lien est cliquable
+                    scoresLink.style.cursor = 'pointer'; 
                     scoresLink.onclick = () => window.location.href = 'my_scores.html'; // Redirige vers la future page de scores
+                    scoresLink.style.color = '#4CAF50'; // Assurer une couleur active
                 } else {
                     // Cas où data est vide mais pas d'erreur PGRST116 (ex: complete est 0)
                     scoresStatusMessageDiv.textContent = "Passez votre première évaluation pour révéler vos scores et commencer votre ascension !";
@@ -229,32 +239,7 @@
                 scoresLink.style.color = '#666';
             }
         }
-        scoresLink.style.cursor = 'pointer'; // Rétablit le curseur par défaut après le chargement
     });
-
-
-    // Fonction pour gérer les clics sur les liens du footer (Espace Prof)
-    function handleFooterLink(section) {
-      const messageProf = document.getElementById('message-prof-bientot');
-
-      // Cache tous les messages par défaut
-      messageProf.style.display = 'none';
-
-      if (section === 'prof') {
-        // Affiche le message "Bientôt disponible" pour l'Espace Prof
-        messageProf.style.display = 'block';
-      }
-    }
-
-    // Fonction pour rediriger vers la page de création d'évaluation
-    function goToCreateEvaluation() {
-      window.location.href = 'create_eval.html';
-    }
-
-    // Fonction pour rediriger vers la page pour rejoindre une évaluation
-    function goToJoinEvaluation() {
-      window.location.href = 'join_eval.html';
-    }
   </script>
 
 </body>
