@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Connexion / Inscription - Revisoo</title>
   <style>
+    /* Intègre le style original fourni par l'utilisateur */
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -47,7 +48,7 @@
       padding: 14px; /* Augmentation du padding */
       border: none;
       border-radius: 12px; /* Bords plus arrondis pour les boutons */
-      background-color: #3f51b5;
+      background-color: #3f51b5; /* Couleur principale des boutons */
       color: white;
       font-size: 1.1rem; /* Légère augmentation de la taille de la police */
       cursor: pointer;
@@ -80,11 +81,24 @@
       color: white;
     }
 
+    /* Style spécifique pour le bouton Google (maintenant noir) */
     .google-btn {
-      display: none; /* Le bouton Google est masqué car son implémentation n'est pas encore faite */
-      background-color: #db4437;
-      margin-top: 1.2rem; /* Augmentation de la marge supérieure */
+      display: flex; /* Toujours visible par défaut dans ce nouveau code */
+      align-items: center;
+      justify-content: center;
+      background-color: #000000; /* Noir */
+      color: white;
+      margin-top: 1.2rem;
+      gap: 10px; /* Espace entre l'icône et le texte */
     }
+    .google-btn:hover {
+        background-color: #333333; /* Gris foncé au survol */
+    }
+    .google-btn img {
+        width: 24px;
+        height: 24px;
+    }
+
 
     .hidden {
       display: none;
@@ -157,11 +171,17 @@
       <input type="password" id="login-password" placeholder="Mot de passe" required />
       <button onclick="login()">Se connecter</button>
       <div class="message error-message" id="login-error"></div>
-      <button class="google-btn">Connexion avec Google</button>
+      
+      <!-- Bouton Google pour la connexion -->
+      <button class="google-btn" id="googleSignInBtnLogin">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon">
+          Continuer avec Google
+      </button>
     </div>
 
     <div id="register-form" class="hidden">
       <h2>Créer un compte</h2>
+      <!-- Nouveaux champs Prénom et Nom -->
       <input type="text" id="register-firstname" placeholder="Prénom" required />
       <input type="text" id="register-lastname" placeholder="Nom" required />
       <input type="email" id="register-email" placeholder="Email" required />
@@ -169,7 +189,12 @@
       <button onclick="register()">Créer un compte</button>
       <div class="message error-message" id="register-error"></div>
       <div class="message success-message" id="register-success" style="display: none;"></div>
-      <button class="google-btn">S'inscrire avec Google</button>
+      
+      <!-- Bouton Google pour l'inscription -->
+      <button class="google-btn" id="googleSignInBtnRegister">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon">
+          S'inscrire avec Google
+      </button>
     </div>
   </div>
 
@@ -180,15 +205,40 @@
     // REMPLACEZ CES VALEURS par l'URL de votre projet Supabase et votre clé "Anon Public"
     const supabaseUrl = 'https://hbnhxnwgyqgggwursrqm.supabase.co'; // Votre URL de projet Supabase
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhibmh4bndneXFnZ2d3dXJzcnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzNjcwNDIsImV4cCI6MjA2MTk0MzA0Mn0.-LCoZFwZgLTnRAzfq5Cu1kIod3sY69f47YcVVbkPPrg'; // Votre clé Anon Public Supabase
-    
+     
     // Initialise le client Supabase
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Attache les fonctions JavaScript aux événements du DOM une fois la page chargée
     document.addEventListener('DOMContentLoaded', function() {
       const loginError = document.getElementById("login-error");
       const registerError = document.getElementById("register-error");
-      const registerSuccess = document.getElementById("register-success"); // Référence au nouveau message de succès
+      const registerSuccess = document.getElementById("register-success");
+
+      // Nouveaux éléments pour les boutons Google
+      const googleSignInBtnLogin = document.getElementById("googleSignInBtnLogin");
+      const googleSignInBtnRegister = document.getElementById("googleSignInBtnRegister");
+
+      function showMessage(element, text, isError = false) {
+          // Cache tous les messages d'erreur/succès
+          loginError.style.display = 'none';
+          registerError.style.display = 'none';
+          registerSuccess.style.display = 'none';
+
+          element.textContent = text;
+          element.style.display = 'block';
+          // Si c'est un message de succès pour l'inscription, rediriger après un court délai
+          if (element === registerSuccess && !isError) {
+              setTimeout(() => {
+                  window.location.href = "main.html";
+              }, 1500); // Redirige après 1.5 secondes pour que l'utilisateur lise le message
+          }
+      }
+
+      function hideMessages() {
+          loginError.style.display = 'none';
+          registerError.style.display = 'none';
+          registerSuccess.style.display = 'none';
+      }
 
       // Fonction utilitaire pour valider le format de l'email
       function isValidEmail(email) {
@@ -203,13 +253,7 @@
         const loginTab = document.getElementById("tab-login");
         const registerTab = document.getElementById("tab-register");
 
-        // Efface les messages d'erreur et de succès précédents
-        loginError.textContent = "";
-        loginError.style.display = 'none';
-        registerError.textContent = "";
-        registerError.style.display = 'none';
-        registerSuccess.textContent = "";
-        registerSuccess.style.display = 'none';
+        hideMessages(); // Efface les messages d'erreur et de succès précédents
 
         if (tab === "login") {
           loginForm.classList.remove("hidden");
@@ -226,10 +270,7 @@
 
       // Fonction pour gérer l'inscription d'un nouvel utilisateur
       window.register = async function() {
-        registerError.textContent = ""; // Réinitialise le message d'erreur
-        registerError.style.display = 'none';
-        registerSuccess.textContent = ""; // Réinitialise le message de succès
-        registerSuccess.style.display = 'none';
+        hideMessages();
 
         const firstname = document.getElementById("register-firstname").value.trim();
         const lastname = document.getElementById("register-lastname").value.trim();
@@ -238,15 +279,13 @@
 
         // Validation des champs vides
         if (!firstname || !lastname || !email || !password) {
-          registerError.textContent = "Tous les champs sont obligatoires.";
-          registerError.style.display = 'block';
+          showMessage(registerError, "Tous les champs sont obligatoires.", true);
           return;
         }
 
         // Validation du format de l'email
         if (!isValidEmail(email)) {
-          registerError.textContent = "Veuillez entrer une adresse email valide.";
-          registerError.style.display = 'block';
+          showMessage(registerError, "Veuillez entrer une adresse email valide.", true);
           return;
         }
 
@@ -255,8 +294,7 @@
         const validChars = /^[a-zA-Z0-9]+$/.test(password);
 
         if (password.length < 7 || digitCount < 3 || !validChars) {
-          registerError.textContent = "Mot de passe invalide. Il doit contenir au moins 7 caractères, dont 3 chiffres, et uniquement des lettres et chiffres.";
-          registerError.style.display = 'block';
+          showMessage(registerError, "Mot de passe invalide. Il doit contenir au moins 7 caractères, dont 3 chiffres, et uniquement des lettres et chiffres.", true);
           return;
         }
 
@@ -266,50 +304,37 @@
           password: password,
           options: {
             data: { // Ces données sont stockées dans user_metadata de Supabase
-              firstname: firstname,
-              lastname: lastname
+              first_name: firstname, // Utilise first_name et last_name pour correspondre aux conventions Supabase
+              last_name: lastname
             }
           }
         });
 
         if (error) {
-          // Affiche l'erreur de Supabase si l'inscription échoue
-          registerError.textContent = "Erreur d'inscription : " + error.message;
-          registerError.style.display = 'block';
+          showMessage(registerError, "Erreur d'inscription : " + error.message, true);
         } else {
-          // Affiche le message de succès et de validation email
-          registerSuccess.textContent = "Votre compte a été créé ! Veuillez valider votre adresse e-mail. Un e-mail de confirmation vous a été envoyé.";
-          registerSuccess.style.display = 'block';
-          // Optionnel: Réinitialiser les champs du formulaire après le succès
-          document.getElementById("register-firstname").value = '';
-          document.getElementById("register-lastname").value = '';
-          document.getElementById("register-email").value = '';
-          document.getElementById("register-password").value = '';
-
-          // Pas de redirection immédiate ici pour laisser le temps à l'utilisateur de lire le message
-          // L'utilisateur devra valider son email avant de pouvoir se connecter.
+          // Comme la confirmation par email est désactivée, l'utilisateur est directement connecté
+          showMessage(registerSuccess, "Inscription réussie ! Vous êtes maintenant connecté(e). Redirection...", false);
+          // La redirection se fait via le setTimeout dans showMessage
         }
       };
 
       // Fonction pour gérer la connexion d'un utilisateur existant
       window.login = async function() {
-        loginError.textContent = ""; // Réinitialise le message d'erreur
-        loginError.style.display = 'none';
+        hideMessages();
 
         const email = document.getElementById("login-email").value.trim();
         const password = document.getElementById("login-password").value;
 
         // Validation des champs vides
         if (!email || !password) {
-          loginError.textContent = "Veuillez remplir tous les champs.";
-          loginError.style.display = 'block';
+          showMessage(loginError, "Veuillez remplir tous les champs.", true);
           return;
         }
 
         // Validation du format de l'email
         if (!isValidEmail(email)) {
-          loginError.textContent = "Veuillez entrer une adresse email valide.";
-          loginError.style.display = 'block';
+          showMessage(loginError, "Veuillez entrer une adresse email valide.", true);
           return;
         }
 
@@ -320,14 +345,45 @@
         });
 
         if (error) {
-          // Affiche l'erreur de Supabase si la connexion échoue
-          loginError.textContent = "Erreur de connexion : " + error.message;
-          loginError.style.display = 'block';
+          showMessage(loginError, "Erreur de connexion : " + error.message, true);
         } else {
           // Redirige vers la page d'accueil si la connexion est réussie
           window.location.href = "main.html";
         }
       };
+
+      // Fonction pour gérer la connexion/inscription via Google
+      async function handleGoogleSignIn() {
+          hideMessages(); // Cache les messages précédents
+          
+          // Utilisez le même message de chargement pour les deux onglets ou une version générique
+          const currentFormErrorDisplay = document.getElementById(window.currentTab === 'login' ? 'login-error' : 'register-error');
+          currentFormErrorDisplay.style.display = 'block';
+          currentFormErrorDisplay.style.backgroundColor = '#fffde7'; // Jaune clair pour "Chargement..."
+          currentFormErrorDisplay.style.color = '#c0a000'; // Texte jaune foncé
+          currentFormErrorDisplay.textContent = 'Redirection vers Google...';
+
+
+          const { data, error } = await supabase.auth.signInWithOAuth({
+              provider: 'google',
+              options: {
+                  redirectTo: window.location.origin + '/main.html' // Redirige vers main.html après connexion/inscription
+              }
+          });
+
+          if (error) {
+              showMessage(currentFormErrorDisplay, 'Erreur de connexion Google : ' + error.message, true);
+          }
+          // Si succès, Supabase gère la redirection, pas besoin de window.location.href ici.
+      }
+
+      // Attache les gestionnaires d'événements aux boutons Google
+      googleSignInBtnLogin.addEventListener('click', handleGoogleSignIn);
+      googleSignInBtnRegister.addEventListener('click', handleGoogleSignIn);
+
+      // Définit l'onglet actif initial (pour la gestion des messages)
+      window.currentTab = 'login'; 
+      switchTab('login'); // S'assure que l'onglet de connexion est actif au démarrage
     });
   </script>
 </body>
