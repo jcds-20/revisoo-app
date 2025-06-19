@@ -1,13 +1,12 @@
-     {
-      "name": "revisoo-app",
-      "version": "1.0.0",
-      "private": true,
-      "main": "api/generate-evaluation.js",
-      "scripts": {
-        "start": "node api/generate-evaluation.js"
-      },
-      "dependencies": {
-        "openai": "^4.47.1"
-      }
-    }
-    
+{
+  "name": "revisoo-app",
+  "version": "1.0.0",
+  "private": true,
+  "main": "api/generate-evaluation.js",
+  "scripts": {
+    "start": "node api/generate-evaluation.js"
+  },
+  "dependencies": {
+    "openai": "^4.47.1"
+  }
+}
