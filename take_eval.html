@@ -1,11 +1,12 @@
  <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <link rel="icon" href="/favicon.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Passer l'Évaluation - Fluzy</title>
+    <title>Passer l'Évaluation - Revisoo</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Favicon unique et correct -->
+    <link rel="icon" href="/favicon.png" type="image/png">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -268,15 +269,8 @@
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         // 🚨 URL de votre fonction serverless Vercel pour la CORRECTION 🚨
-        // IMPORTANT : Utilisez MAINTENANT votre domaine personnalisé 'revisoo.com'
         const OPENAI_CORRECTION_ENDPOINT = 'https://revisoo.com/api/correct-answer'; 
         
-        // --- TRÈS IMPORTANT POUR LE DÉBOGAGE : Vérifiez ces logs dans la console du navigateur ---
-        console.log("Supabase URL utilisée:", supabaseUrl);
-        console.log("Supabase Key utilisée (début):", supabaseKey.substring(0, 10) + '...'); 
-        console.log("OpenAI Correction Endpoint:", OPENAI_CORRECTION_ENDPOINT); 
-        // ------------------------------------------------------------------------------------
-
         let currentEvaluationData = []; 
         let userAnswers = {}; 
         let currentQuestionIndex = 0; 
@@ -340,7 +334,7 @@
                         console.error("Statut HTTP Supabase:", error.status);
 
                         if (error.status === 401) {
-                            errorMessage.textContent = `Erreur d'authentification (401) : La clé API Supabase est incorrecte ou non acceptée par le serveur. Veuillez VÉRIFIER VOTRE CLÉ (${supabaseKey.substring(0, 10)}...) et RECHARGER LA PAGE en vidant le cache.`;
+                            errorMessage.textContent = `Erreur d'authentification (401) : La clé API Supabase est incorrecte ou non acceptée par le serveur. Veuillez VÉRIFIER VOTRE CLÉ et RECHARGER LA PAGE en vidant le cache.`;
                         } else if (error.code === 'PGRST116') {
                             errorMessage.textContent = "Ce code d'évaluation n'existe pas ou a expiré."; 
                         } else if (error.status === 403) {
@@ -499,6 +493,7 @@
                             feedbackHtml += `<p class="feedback-incorrect">Incorrect. La bonne réponse était: <em>${q.correct_answer}</em></p>`;
                         }
                     } else if (q.type === 'short_answer') {
+                        // Appel à la nouvelle fonction de correction IA pour les réponses courtes
                         const correctionResult = await correctShortAnswerWithAI(q.question, userAnswer, q.correct_answer);
                         feedbackHtml += `<p>Correction de l'IA: <span class="${correctionResult.is_correct ? 'feedback-correct' : 'feedback-incorrect'}">${correctionResult.feedback}</span></p>`;
                         if (correctionResult.is_correct) {
@@ -528,10 +523,9 @@
                         const userId = session.user.id;
                         console.log("Utilisateur connecté pour la sauvegarde du score:", userId); 
 
-                        // Utilisation des noms de colonnes ajustés ici : total_evaluation et complete
                         const { data: existingScores, error: fetchError } = await supabase
                             .from('scores')
-                            .select('complete, total_evaluation, win_streak') // <-- Noms des colonnes ajustés
+                            .select('complete, total_evaluation, win_streak') 
                             .eq('user_id', userId)
                             .single();
 
@@ -539,27 +533,24 @@
                             console.error("Erreur lors de la récupération des scores existants:", fetchError);
                         }
 
-                        // Utilisation des noms de colonnes ajustés ici : total_evaluation et complete
                         let newComplete = (existingScores?.complete || 0) + 1;
                         let newTotalEvaluation = (existingScores?.total_evaluation || 0) + 1;
                         let newWinStreak = (existingScores?.win_streak || 0);
 
-                        // Nouvelle logique pour le win_streak
                         const passingThreshold = 0.7; // Seuil de réussite à 70%
                         const percentageScore = (finalScore / totalQuestions);
 
-                        if (finalScore === totalQuestions) {
-                            newWinStreak++; // Score parfait : incrémente la série
-                        } else if (percentageScore < passingThreshold) {
-                            newWinStreak = 0; // Échec (en dessous du seuil) : réinitialise la série
+                        if (finalScore === totalQuestions) { // Score parfait
+                            newWinStreak++; 
+                        } else if (percentageScore < passingThreshold) { // Échec
+                            newWinStreak = 0; 
                         } 
-                        // Sinon (score non parfait mais > seuil de réussite), la série reste inchangée.
+                        // Sinon (score non parfait mais >= seuil de réussite), la série reste inchangée.
 
-                        // Utilisation des noms de colonnes ajustés ici : total_evaluation et complete
                         const scoreData = {
                             user_id: userId,
-                            complete: newComplete, // <-- Nom de colonne ajusté
-                            total_evaluation: newTotalEvaluation, // <-- Nom de colonne ajusté
+                            complete: newComplete, 
+                            total_evaluation: newTotalEvaluation,
                             win_streak: newWinStreak
                         };
 
@@ -594,18 +585,14 @@
                 // --- Fin : Sauvegarde du score dans Supabase ---
             }
 
+            // Nouvelle fonction pour corriger les réponses courtes via l'IA
             async function correctShortAnswerWithAI(question, userAnswer, correctAnswer) {
-                // 🚨 URL de votre fonction serverless Vercel pour la CORRECTION 🚨
-                // IMPORTANT : Utilisez MAINTENANT votre domaine personnalisé 'revisoo.com'
-                const OPENAI_CORRECTION_ENDPOINT = 'https://revisoo.com/api/correct-answer'; 
-
                 // Vérification de l'endpoint pour s'assurer qu'il a été mis à jour
-                if (!OPENAI_CORRECTION_ENDPOINT || OPENAI_CORRECTION_ENDPOINT.includes('VOTRE_NOM_DE_PROJET')) {
-                    console.error("Erreur: L'endpoint du serveur backend pour la correction IA n'est pas configuré correctement. Veuillez remplacer 'VOTRE_NOM_DE_PROJET' par votre URL Vercel.");
+                if (!OPENAI_CORRECTION_ENDPOINT || OPENAI_CORRECTION_ENDPOINT.includes('VOTRE_NOM_DE_PROJET')) { // Vérifie 'VOTRE_NOM_DE_PROJET' pour le débogage
+                    console.error("Erreur: L'endpoint du serveur backend pour la correction IA n'est pas configuré correctement. Il devrait utiliser votre domaine 'revisoo.com'.");
                     return { feedback: "Erreur: L'endpoint du serveur backend pour la correction IA n'est pas configuré correctement.", is_correct: false };
                 }
 
-                // Le payload envoyé au backend Vercel
                 const payloadToSendToBackend = {
                     question,
                     userAnswer,
@@ -613,12 +600,10 @@
                 };
 
                 try {
-                    // Appel à votre fonction serverless Vercel (qui utilisera la clé API sécurisée)
                     const response = await fetch(OPENAI_CORRECTION_ENDPOINT, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            // La clé API OpenAI est gérée de manière sécurisée par le backend Vercel, pas ici
                         },
                         body: JSON.stringify(payloadToSendToBackend)
                     });
@@ -628,11 +613,13 @@
                         throw new Error(`Erreur du serveur backend (${response.status}): ${errorData.error || response.statusText}`);
                     }
 
-                    const result = await response.json(); // Le backend Vercel renvoie directement la réponse d'OpenAI
+                    const result = await response.json(); 
                     const aiResponse = result.choices[0].message.content;
 
+                    // Extrait le booléen (Correct: true/false) de la réponse de l'IA
                     const match = aiResponse.match(/\(Correct:\s*(true|false)\)/i);
                     const isCorrect = match ? match[1].toLowerCase() === 'true' : false;
+                    // Supprime le booléen du texte pour afficher le feedback propre
                     const feedbackText = aiResponse.replace(/\(Correct:\s*(true|false)\)/i, '').trim();
 
                     return { feedback: feedbackText, is_correct: isCorrect };
