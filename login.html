@@ -354,18 +354,18 @@
       async function handleGoogleSignIn() {
           hideMessages(); // Cache les messages précédents
           
-          // Utilisez le même message de chargement pour les deux onglets ou une version générique
           const currentFormErrorDisplay = document.getElementById(window.currentTab === 'login' ? 'login-error' : 'register-error');
           currentFormErrorDisplay.style.display = 'block';
-          currentFormErrorDisplay.style.backgroundColor = '#fffde7'; // Jaune clair pour "Chargement..."
-          currentFormErrorDisplay.style.color = '#c0a000'; // Texte jaune foncé
+          currentFormErrorDisplay.style.backgroundColor = '#fffde7'; 
+          currentFormErrorDisplay.style.color = '#c0a000'; 
           currentFormErrorDisplay.textContent = 'Redirection vers Google...';
 
 
           const { data, error } = await supabase.auth.signInWithOAuth({
               provider: 'google',
               options: {
-                  redirectTo: window.location.origin + '/main.html' // Redirige vers main.html après connexion/inscription
+                  // C'est la ligne modifiée : redirection forcée vers l'URL de production
+                  redirectTo: 'https://revisoo.com/main.html' 
               }
           });
 
