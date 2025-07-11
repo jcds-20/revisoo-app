@@ -1,0 +1,174 @@
+  <!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Choix Chrono - Revisoo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <style>
+    body {
+      /* Dégradé bleu-vert avec animation */
+      background: linear-gradient(45deg, #87CEEB, #20B2AA, #87CEEB); /* Sky Blue to Light Sea Green, with loop */
+      background-size: 400% 400%; /* Taille du fond pour l'animation */
+      animation: gradientAnimation 15s ease infinite; /* Animation du dégradé */
+      margin: 0;
+      padding: 20px;
+      color: #333;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+
+    /* Animation du dégradé */
+    @keyframes gradientAnimation {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #3f51b5;
+      margin-bottom: 25px;
+      font-size: 2.5em;
+    }
+
+    p {
+      font-size: 1.1em;
+      margin-bottom: 30px;
+      color: #555;
+    }
+
+    .subject-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .subject-btn {
+      padding: 15px 30px;
+      background-color: #007bff; /* Bleu vif pour les matières */
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.2em;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      flex: 1 1 auto;
+      min-width: 150px;
+      max-width: 200px;
+    }
+
+    .subject-btn:hover {
+      background-color: #0056b3;
+      transform: translateY(-2px);
+    }
+
+    .info-message {
+        background-color: #fff3cd; /* Jaune clair pour les infos */
+        border: 1px solid #ffeeba;
+        color: #856404;
+        padding: 15px;
+        border-radius: 8px;
+        font-size: 1em;
+        margin-top: 20px;
+    }
+
+    .back-button {
+      background-color: #607d8b; /* Gris pour le bouton Retour */
+      margin-top: 20px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      color: white;
+      text-decoration: none;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .back-button:hover {
+      background-color: #455a64;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 2em;
+        }
+        .container {
+            padding: 25px;
+        }
+        .subject-btn {
+            padding: 12px 20px;
+            font-size: 1.1em;
+            min-width: 120px;
+        }
+        .info-message {
+            font-size: 0.9em;
+        }
+    }
+    @media (max-width: 480px) {
+        h1 {
+            font-size: 1.8em;
+        }
+        .container {
+            padding: 20px;
+        }
+        .subject-buttons {
+            flex-direction: column;
+            gap: 15px;
+        }
+        .subject-btn {
+            max-width: 100%;
+        }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Mode Chrono : Choisissez votre matière</h1>
+    <p>Sélectionnez une matière pour commencer une évaluation rapide. Vous aurez 3 vies et 1 minute pour répondre à 10 questions !</p>
+    
+    <div class="subject-buttons">
+      <button class="subject-btn" onclick="startGame('math')">Math</button>
+      <button class="subject-btn" onclick="startGame('francais')">Français</button>
+      <button class="subject-btn" onclick="startGame('anglais')">Anglais</button>
+    </div>
+
+    <div class="info-message">
+      Vous pouvez faire jusqu'à 5 évaluations Chrono par jour.
+      <br>Gagnez des niveaux et des titres pour monter dans le classement !
+    </div>
+  </div>
+
+  <button class="back-button" onclick="window.location.href='main.html'">Retour à l'Accueil</button>
+
+  <script>
+    function startGame(subject) {
+      // Pour l'instant, un simple message d'alerte.
+      // Plus tard, cette fonction redirigera vers la page de jeu réelle avec la matière choisie.
+      alert(`Lancement de l'évaluation Chrono en ${subject.charAt(0).toUpperCase() + subject.slice(1)} !`);
+      // Exemple de redirection future :
+      // window.location.href = `chrono_game_play.html?subject=${subject}`;
+    }
+  </script>
+
+</body>
+</html>
