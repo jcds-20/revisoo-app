@@ -181,6 +181,8 @@
     <div class="button-container">
       <button class="action-btn" id="createEvalBtn">Créer une évaluation</button>
       <button class="action-btn" id="joinEvalBtn">Rejoindre une évaluation</button>
+      <!-- Nouveau bouton pour le mode Chrono -->
+      <button class="action-btn" id="chronoModeBtn">Mode Chrono</button>
     </div>
 
     <!-- Section pour afficher les messages (scores et prof) -->
@@ -216,10 +218,14 @@
 
         const createEvalBtn = document.getElementById('createEvalBtn');
         const joinEvalBtn = document.getElementById('joinEvalBtn');
+        const chronoModeBtn = document.getElementById('chronoModeBtn'); // Nouveau bouton Chrono
 
         // Ajout des écouteurs d'événements pour les boutons principaux
         createEvalBtn.addEventListener('click', () => window.location.href = 'create_eval.html');
         joinEvalBtn.addEventListener('click', () => window.location.href = 'join_eval.html');
+        // Écouteur d'événement pour le bouton Chrono
+        chronoModeBtn.addEventListener('click', () => window.location.href = 'chrono_game.html');
+
 
         // Masquer tous les messages au démarrage
         scoresStatusMessageDiv.style.display = 'none';
