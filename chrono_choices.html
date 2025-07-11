@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -162,11 +162,8 @@
 
   <script>
     function startGame(subject) {
-      // Pour l'instant, un simple message d'alerte.
-      // Plus tard, cette fonction redirigera vers la page de jeu réelle avec la matière choisie.
-      alert(`Lancement de l'évaluation Chrono en ${subject.charAt(0).toUpperCase() + subject.slice(1)} !`);
-      // Exemple de redirection future :
-      // window.location.href = `chrono_game_play.html?subject=${subject}`;
+      // Redirige vers chrono_game.html en passant la matière choisie
+      window.location.href = `chrono_game.html?subject=${subject}`;
     }
   </script>
 

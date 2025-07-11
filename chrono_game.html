@@ -1,0 +1,396 @@
+ <!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jeu Chrono - Revisoo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <style>
+    body {
+      background: linear-gradient(45deg, #87CEEB, #20B2AA, #87CEEB);
+      background-size: 400% 400%;
+      animation: gradientAnimation 15s ease infinite;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+
+    @keyframes gradientAnimation {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 700px; /* Plus large pour le jeu */
+      text-align: center;
+    }
+
+    h1 {
+      color: #3f51b5;
+      margin-bottom: 20px;
+      font-size: 2.5em;
+    }
+
+    .game-info {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin-bottom: 25px;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #555;
+    }
+
+    .timer, .lives {
+      background-color: #e0f7fa;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: 1px solid #b2ebf2;
+      min-width: 120px;
+    }
+
+    .lives span {
+      color: #e74c3c; /* Rouge pour les vies */
+    }
+
+    .question-area {
+      background-color: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 25px;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 25px;
+      font-size: 1.3em;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .answer-input {
+      width: calc(100% - 24px);
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      font-size: 1.1em;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .action-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background-color: #4CAF50; /* Vert pour le bouton d'action */
+      color: white;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .action-btn:hover {
+      background-color: #45a049;
+      transform: translateY(-2px);
+    }
+
+    .message {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: bold;
+        display: none; /* Masqué par défaut */
+    }
+
+    .error-message {
+      color: red;
+      background-color: #ffebee;
+      border: 1px solid #d32f2f;
+    }
+
+    .success-message {
+        color: #2e7d32;
+        background-color: #e8f5e9;
+        border: 1px solid #a5d6a7;
+    }
+
+    .back-button {
+      background-color: #607d8b;
+      margin-top: 20px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      color: white;
+      text-decoration: none;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .back-button:hover {
+      background-color: #455a64;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 2em;
+        }
+        .container {
+            padding: 25px;
+        }
+        .game-info {
+            font-size: 1em;
+        }
+        .question-area {
+            font-size: 1.1em;
+            padding: 20px;
+        }
+        .answer-input {
+            font-size: 1em;
+        }
+        .action-btn {
+            padding: 12px 20px;
+            font-size: 1em;
+        }
+    }
+    @media (max-width: 480px) {
+        h1 {
+            font-size: 1.8em;
+        }
+        .container {
+            padding: 20px;
+        }
+        .game-info {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1 id="game-title">Jeu Chrono : Matière</h1>
+    
+    <div class="game-info">
+      <div class="timer">Temps : <span id="time">60</span>s</div>
+      <div class="lives">Vies : <span id="lives">3</span></div>
+    </div>
+
+    <div class="question-area" id="question-display">
+      Cliquez sur "Commencer" pour lancer le jeu !
+    </div>
+
+    <input type="text" id="answer-input" class="answer-input" placeholder="Votre réponse" disabled />
+    <button id="submit-answer-btn" class="action-btn">Commencer</button>
+
+    <div class="message success-message" id="game-message-success"></div>
+    <div class="message error-message" id="game-message-error"></div>
+  </div>
+
+  <button class="back-button" onclick="window.location.href='chrono_choices.html'">Retour au Choix</button>
+
+  <script>
+    // Variables du jeu
+    let subject = '';
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let lives = 3;
+    let timeLeft = 60;
+    let timerInterval;
+    let gameStarted = false;
+
+    // Éléments du DOM
+    const gameTitle = document.getElementById('game-title');
+    const timeDisplay = document.getElementById('time');
+    const livesDisplay = document.getElementById('lives');
+    const questionDisplay = document.getElementById('question-display');
+    const answerInput = document.getElementById('answer-input');
+    const submitAnswerBtn = document.getElementById('submit-answer-btn');
+    const gameMessageSuccess = document.getElementById('game-message-success');
+    const gameMessageError = document.getElementById('game-message-error');
+
+    // Questions de test (seront remplacées par des questions de Supabase ou IA plus tard)
+    const testQuestions = {
+      math: [
+        { question: "Combien font 7 x 8 ?", answer: "56" },
+        { question: "Quelle est la racine carrée de 81 ?", answer: "9" },
+        { question: "Si x + 5 = 12, que vaut x ?", answer: "7" },
+        { question: "Combien de côtés a un triangle ?", answer: "3" },
+        { question: "Quel est le résultat de 15 / 3 ?", answer: "5" },
+        { question: "Combien font 9 + 13 ?", answer: "22" },
+        { question: "Quel est le périmètre d'un carré de côté 4 ?", answer: "16" },
+        { question: "Combien de degrés dans un cercle ?", answer: "360" },
+        { question: "Si un article coûte 20€ et est soldé à 50%, quel est son nouveau prix ?", answer: "10" },
+        { question: "Quel est le plus petit nombre premier ?", answer: "2" }
+      ],
+      francais: [
+        { question: "Quel est le participe passé du verbe 'faire' ?", answer: "fait" },
+        { question: "Quel est le pluriel de 'cheval' ?", answer: "chevaux" },
+        { question: "Donnez un synonyme de 'heureux'.", answer: "content" },
+        { question: "Comment conjugue-t-on 'être' à la 1ère personne du singulier au présent de l'indicatif ?", answer: "je suis" },
+        { question: "Quel est l'adjectif de 'nuit' ?", answer: "nocturne" },
+        { question: "Quel est le contraire de 'rapide' ?", answer: "lent" },
+        { question: "Quel est le nom de l'auteur de 'Le Petit Prince' ?", answer: "Antoine de Saint-Exupéry" },
+        { question: "Quel est le verbe de la phrase 'Il mange une pomme' ?", answer: "mange" },
+        { question: "Quel est le féminin de 'acteur' ?", answer: "actrice" },
+        { question: "Quel est le mot qui signifie 'très grand' ?", answer: "énorme" }
+      ],
+      anglais: [
+        { question: "What is 'bonjour' in English?", answer: "hello" },
+        { question: "How do you say 'merci' in English?", answer: "thank you" },
+        { question: "What is the past tense of 'go'?", answer: "went" },
+        { question: "What is 'chien' in English?", answer: "dog" },
+        { question: "Translate 'eau'.", answer: "water" },
+        { question: "What is the opposite of 'hot'?", answer: "cold" },
+        { question: "What is 'pomme' in English?", answer: "apple" },
+        { question: "What is the plural of 'child'?", answer: "children" },
+        { question: "How do you say 'livre' (book) in English?", answer: "book" },
+        { question: "What is the color of the sky?", answer: "blue" }
+      ]
+    };
+
+    // Fonction pour afficher un message temporaire
+    function showGameMessage(element, text, isError = false) {
+      gameMessageSuccess.style.display = 'none';
+      gameMessageError.style.display = 'none';
+      element.textContent = text;
+      element.style.display = 'block';
+      setTimeout(() => {
+        element.style.display = 'none';
+      }, 1500); // Message disparaît après 1.5 secondes
+    }
+
+    // Initialisation du jeu au chargement de la page
+    document.addEventListener('DOMContentLoaded', () => {
+      // Récupère la matière depuis l'URL (ex: ?subject=math)
+      const urlParams = new URLSearchParams(window.location.search);
+      subject = urlParams.get('subject');
+
+      if (subject) {
+        gameTitle.textContent = `Jeu Chrono : ${subject.charAt(0).toUpperCase() + subject.slice(1)}`;
+        questions = testQuestions[subject] || []; // Charge les questions de test pour la matière
+        if (questions.length === 0) {
+          questionDisplay.textContent = "Aucune question disponible pour cette matière.";
+          submitAnswerBtn.disabled = true;
+          answerInput.disabled = true;
+        }
+      } else {
+        gameTitle.textContent = "Jeu Chrono";
+        questionDisplay.textContent = "Matière non sélectionnée. Retournez au choix.";
+        submitAnswerBtn.disabled = true;
+        answerInput.disabled = true;
+      }
+
+      livesDisplay.textContent = lives; // Affiche les vies initiales
+      timeDisplay.textContent = timeLeft; // Affiche le temps initial
+    });
+
+    // Fonction pour démarrer le timer
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timeDisplay.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          endGame(false); // Fin du jeu : temps écoulé
+        }
+      }, 1000);
+    }
+
+    // Fonction pour afficher la question suivante
+    function displayNextQuestion() {
+      if (currentQuestionIndex < questions.length) {
+        questionDisplay.textContent = questions[currentQuestionIndex].question;
+        answerInput.value = ''; // Vide le champ de réponse
+        answerInput.focus(); // Met le focus sur le champ de réponse
+      } else {
+        endGame(true); // Toutes les questions ont été répondues
+      }
+    }
+
+    // Fonction pour vérifier la réponse
+    function checkAnswer() {
+      const userAnswer = answerInput.value.trim().toLowerCase();
+      const correctAnswer = questions[currentQuestionIndex].answer.toLowerCase();
+
+      if (userAnswer === correctAnswer) {
+        score++;
+        showGameMessage(gameMessageSuccess, "Bonne réponse !");
+      } else {
+        lives--;
+        livesDisplay.textContent = lives;
+        showGameMessage(gameMessageError, `Mauvaise réponse. La bonne réponse était : "${questions[currentQuestionIndex].answer}"`);
+        if (lives <= 0) {
+          clearInterval(timerInterval);
+          endGame(false); // Fin du jeu : plus de vies
+          return;
+        }
+      }
+      currentQuestionIndex++;
+      displayNextQuestion(); // Passe à la question suivante
+    }
+
+    // Fonction pour démarrer le jeu
+    submitAnswerBtn.addEventListener('click', () => {
+      if (!gameStarted) {
+        gameStarted = true;
+        submitAnswerBtn.textContent = "Valider la réponse";
+        answerInput.disabled = false;
+        startTimer();
+        displayNextQuestion();
+      } else {
+        checkAnswer();
+      }
+    });
+
+    // Permet de valider aussi avec la touche Entrée
+    answerInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !answerInput.disabled) {
+        submitAnswerBtn.click(); // Simule un clic sur le bouton de validation
+      }
+    });
+
+    // Fonction de fin de jeu
+    function endGame(completed) {
+      clearInterval(timerInterval); // Arrête le timer
+      answerInput.disabled = true;
+      submitAnswerBtn.disabled = true;
+      submitAnswerBtn.textContent = "Partie terminée";
+
+      let finalMessage = "";
+      if (completed) {
+        finalMessage = `Bravo ! Vous avez terminé les ${questions.length} questions. Votre score : ${score}/${questions.length}.`;
+        questionDisplay.textContent = finalMessage;
+      } else if (timeLeft <= 0) {
+        finalMessage = `Temps écoulé ! Votre score : ${score}/${questions.length}.`;
+        questionDisplay.textContent = finalMessage;
+      } else if (lives <= 0) {
+        finalMessage = `Plus de vies ! Votre score : ${score}/${questions.length}.`;
+        questionDisplay.textContent = finalMessage;
+      }
+      showGameMessage(gameMessageSuccess, finalMessage); // Affiche le message final
+    }
+
+  </script>
+
+</body>
+</html>
