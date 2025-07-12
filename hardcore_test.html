@@ -1,0 +1,373 @@
+ <!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mode Hardcore Quotidien - Revisoo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <style>
+    body {
+      /* Dégradé rouge-orange hardcore */
+      background: linear-gradient(45deg, #DC143C, #FF4500, #DC143C); /* Crimson to OrangeRed */
+      background-size: 400% 400%;
+      animation: gradientAnimation 15s ease infinite;
+      margin: 0;
+      padding: 20px;
+      color: #eee; /* Texte clair pour contraster avec le fond sombre */
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+
+    @keyframes gradientAnimation {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      background-color: rgba(0, 0, 0, 0.75); /* Fond semi-transparent foncé */
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      width: 90%;
+      max-width: 700px; /* Un peu plus large pour les questions complexes */
+      text-align: center;
+    }
+
+    h1 {
+      color: #FFD700; /* Or pour le titre */
+      margin-bottom: 25px;
+      font-size: 2.8em;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    p {
+      font-size: 1.2em;
+      margin-bottom: 30px;
+      color: #ccc;
+    }
+
+    #timer {
+      font-size: 4em;
+      font-weight: bold;
+      color: #FFD700; /* Or pour le timer */
+      margin-bottom: 20px;
+    }
+
+    #lives {
+      font-size: 1.8em;
+      color: #eee;
+      margin-bottom: 30px;
+    }
+
+    .question-area {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 25px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      min-height: 150px; /* Pour éviter le saut de contenu */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .question {
+      font-size: 1.6em; /* Un peu plus grand pour des questions difficiles */
+      margin-bottom: 20px;
+      color: #fff;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .options {
+        width: 100%;
+    }
+
+    .options button {
+      display: block;
+      width: 100%;
+      padding: 18px; /* Plus grand pour faciliter le clic */
+      margin-bottom: 12px;
+      background-color: #32CD32; /* Vert LimeGreen pour les réponses */
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.3em; /* Texte plus lisible */
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .options button:hover {
+      background-color: #228B22; /* Vert ForestGreen au survol */
+      transform: translateY(-3px);
+    }
+
+    .options button:last-child {
+        margin-bottom: 0;
+    }
+
+    .info-message {
+      background-color: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #eee;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 1em;
+      margin-top: 20px;
+    }
+
+    .back-button {
+      background-color: #607d8b;
+      margin-top: 20px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      color: white;
+      text-decoration: none;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .back-button:hover {
+      background-color: #455a64;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 2.2em;
+        }
+        #timer {
+            font-size: 3em;
+        }
+        .question {
+            font-size: 1.4em;
+        }
+        .options button {
+            padding: 15px;
+            font-size: 1.1em;
+        }
+    }
+    @media (max-width: 480px) {
+        h1 {
+            font-size: 1.8em;
+        }
+        #timer {
+            font-size: 2.5em;
+        }
+        .question {
+            font-size: 1.2em;
+        }
+        .options button {
+            font-size: 1em;
+            padding: 12px;
+        }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Défi Hardcore Quotidien !</h1>
+    <p>Une seule vie, 30 secondes par question. 10 questions de niveau Bac+2. Bonne chance !</p>
+
+    <div id="timer">30</div>
+    <div id="lives">Vies restantes : ❤️</div>
+
+    <div class="question-area">
+      <div class="question" id="question-text">Chargement de l'évaluation...</div>
+      <div class="options" id="options-container">
+        <button style="display: none;">Option A</button>
+      </div>
+    </div>
+
+    <div class="info-message">
+      Cette évaluation est générée quotidiennement par l'IA pour un défi renouvelé !
+    </div>
+  </div>
+
+  <button class="back-button" onclick="window.location.href='chrono.html'">Retour aux modes de jeu</button>
+
+  <script>
+    let timeLeft = 30;
+    let lives = 1; // Strictement 1 vie pour le mode hardcore
+    let currentQuestionIndex = 0;
+    let timerInterval;
+    let questions = []; // Ce tableau sera rempli par la requête au backend
+    let userAnswers = []; // Pour stocker les réponses de l'utilisateur
+
+    // Fonction pour récupérer les questions depuis votre backend (Supabase/Vercel)
+    async function fetchHardcoreQuestions() {
+      try {
+        // Remplacez '/api/hardcore-questions' par l'URL de votre fonction Vercel/Supabase Edge Function
+        const response = await fetch('/api/hardcore-questions');
+        if (!response.ok) {
+          if (response.status === 429) { // Exemple: Si votre API renvoie 429 pour le quota
+            alert("Vous avez déjà complété l'évaluation Hardcore d'aujourd'hui. Revenez demain !");
+            window.location.href = 'chrono.html'; // Redirigez l'utilisateur
+            return;
+          }
+          throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        const data = await response.json();
+        if (data.questions && data.questions.length === 10) {
+          questions = data.questions;
+          currentQuestionIndex = 0; // Réinitialiser pour une nouvelle session
+          userAnswers = []; // Réinitialiser les réponses de l'utilisateur
+          loadQuestion();
+        } else {
+          alert("Erreur: Les questions n'ont pas pu être chargées correctement. Veuillez réessayer plus tard.");
+          window.location.href = 'chrono.html';
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des questions Hardcore:', error);
+        alert("Impossible de charger l'évaluation Hardcore. Problème de connexion ou de serveur.");
+        window.location.href = 'chrono.html';
+      }
+    }
+
+    function startTimer() {
+      timeLeft = 30;
+      document.getElementById('timer').textContent = timeLeft;
+      clearInterval(timerInterval); // S'assurer qu'un seul timer est actif
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          handleTimeUp();
+        }
+      }, 1000);
+    }
+
+    function loadQuestion() {
+      if (currentQuestionIndex < questions.length) {
+        const q = questions[currentQuestionIndex];
+        document.getElementById('question-text').textContent = q.question;
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = ''; // Nettoyer les anciennes options
+
+        // S'assurer que les options sont bien un tableau, et les mélanger
+        const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+
+        shuffledOptions.forEach(option => {
+          const button = document.createElement('button');
+          button.textContent = option;
+          button.onclick = () => checkAnswer(option);
+          optionsContainer.appendChild(button);
+        });
+        startTimer(); // Démarrer le timer pour la nouvelle question
+      } else {
+        // Toutes les questions ont été posées
+        endGame(true); // Terminer le jeu avec succès
+      }
+    }
+
+    async function checkAnswer(selectedOption) {
+      clearInterval(timerInterval); // Arrêter le timer
+      const q = questions[currentQuestionIndex];
+      const isCorrect = (selectedOption === q.answer);
+
+      userAnswers.push({
+        question: q.question,
+        userAnswer: selectedOption,
+        correctAnswer: q.answer,
+        isCorrect: isCorrect
+      });
+
+      if (isCorrect) {
+        // alert("Bonne réponse !"); // On peut retirer l'alerte pour un flux plus rapide
+        currentQuestionIndex++;
+        loadQuestion(); // Charger la question suivante
+      } else {
+        lives--;
+        document.getElementById('lives').textContent = `Vies restantes : ${'❤️'.repeat(lives)}`;
+        if (lives <= 0) {
+          // alert("Mauvaise réponse ! Fin de partie en mode Hardcore.");
+          endGame(false); // Fin de jeu suite à une mauvaise réponse
+        } else {
+            // alert("Mauvaise réponse ! Il vous reste une vie."); // Pourrait être utile pour déboguer
+            // En mode hardcore, une mauvaise réponse = fin de partie ou passage à la suite selon la logique
+            // Ici, comme 1 vie, une mauvaise réponse = fin de partie.
+            endGame(false); // Pour une seule vie, toute erreur est fatale.
+        }
+      }
+    }
+
+    async function handleTimeUp() {
+        clearInterval(timerInterval);
+        lives--;
+        document.getElementById('lives').textContent = `Vies restantes : ${'❤️'.repeat(lives)}`;
+
+        userAnswers.push({
+            question: questions[currentQuestionIndex].question,
+            userAnswer: "Temps écoulé",
+            correctAnswer: questions[currentQuestionIndex].answer,
+            isCorrect: false
+        });
+
+        if (lives <= 0) {
+            // alert("Temps écoulé ! Fin de partie en mode Hardcore.");
+            endGame(false); // Fin de jeu suite au temps écoulé
+        } else {
+            // Avec une seule vie, cela revient au même que lives <= 0.
+            endGame(false);
+        }
+    }
+
+    async function endGame(success) {
+      clearInterval(timerInterval); // S'assurer que le timer est bien arrêté
+
+      let correctCount = userAnswers.filter(a => a.isCorrect).length;
+      let totalCount = questions.length;
+
+      try {
+        // Envoi des résultats au backend pour enregistrement et correction
+        const response = await fetch('/api/submit-hardcore-result', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Ajoutez ici un token d'authentification si vos RLS l'exigent (ex: Authorization: `Bearer ${supabase.auth.getSession().access_token}`)
+            },
+            body: JSON.stringify({
+                userId: "user_id_dynamique", // TODO: Remplacer par l'ID de l'utilisateur connecté depuis Supabase Auth
+                score: correctCount,
+                totalQuestions: totalCount,
+                answers: userAnswers,
+                success: success // Indique si l'évaluation a été complétée avec succès (toutes les questions répondues)
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Échec de l'enregistrement des résultats: ${response.status}`);
+        }
+        const resultData = await response.json();
+        console.log("Résultats envoyés et enregistrés :", resultData);
+
+        // Rediriger vers la page des résultats
+        // On pourrait passer un identifiant de session ou les résultats directement si ce n'est pas trop lourd
+        localStorage.setItem('hardcoreEvaluationResults', JSON.stringify(userAnswers));
+        window.location.href = `hardcore_eval.html?score=${correctCount}&total=${totalCount}&success=${success}`;
+
+      } catch (error) {
+        console.error("Erreur lors de l'envoi des résultats :", error);
+        alert("Une erreur est survenue lors de l'enregistrement de vos résultats.");
+        // Rediriger vers la page des résultats même en cas d'erreur côté backend pour ne pas bloquer l'utilisateur
+        localStorage.setItem('hardcoreEvaluationResults', JSON.stringify(userAnswers));
+        window.location.href = `hardcore_eval.html?score=${correctCount}&total=${totalCount}&success=${success}&error=true`;
+      }
+    }
+
+    // Démarrer le chargement des questions quand la page est chargée
+    document.addEventListener('DOMContentLoaded', fetchHardcoreQuestions);
+  </script>
+
+</body>
+</html>

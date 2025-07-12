@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Choix Chrono - Revisoo</title>
+  <title>Modes de Jeu - Revisoo</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="icon" href="/favicon.png" type="image/png">
   <style>
@@ -81,6 +81,26 @@
       transform: translateY(-2px);
     }
 
+    .hardcore-btn {
+        background-color: #dc3545; /* Rouge vif pour le mode Hardcore */
+        margin-top: 20px;
+        padding: 15px 30px;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.2em;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        width: calc(100% - 40px); /* Pour qu'il prenne plus de place */
+        max-width: 420px; /* Aligné avec la largeur des boutons matière */
+    }
+
+    .hardcore-btn:hover {
+        background-color: #c82333;
+        transform: translateY(-2px);
+    }
+
     .info-message {
         background-color: #fff3cd; /* Jaune clair pour les infos */
         border: 1px solid #ffeeba;
@@ -114,7 +134,7 @@
         .container {
             padding: 25px;
         }
-        .subject-btn {
+        .subject-btn, .hardcore-btn {
             padding: 12px 20px;
             font-size: 1.1em;
             min-width: 120px;
@@ -134,7 +154,7 @@
             flex-direction: column;
             gap: 15px;
         }
-        .subject-btn {
+        .subject-btn, .hardcore-btn {
             max-width: 100%;
         }
     }
@@ -143,18 +163,21 @@
 <body>
 
   <div class="container">
-    <h1>Mode Chrono : Choisissez votre matière</h1>
-    <p>Sélectionnez une matière pour commencer une évaluation rapide. Vous aurez 3 vies et 1 minute pour répondre à 10 questions !</p>
-    
+    <h1>Modes de Jeu : Choisissez votre défi</h1>
+    <p>
+        Sélectionnez une matière pour le mode Chrono classique (3 vies, 1 minute par question).
+    </p>
+
     <div class="subject-buttons">
       <button class="subject-btn" onclick="startGame('math')">Math</button>
       <button class="subject-btn" onclick="startGame('francais')">Français</button>
       <button class="subject-btn" onclick="startGame('anglais')">Anglais</button>
     </div>
 
+    <button class="hardcore-btn" onclick="startHardcoreTest()">Mode Hardcore : Évaluation Quotidienne</button>
+
     <div class="info-message">
-      Vous pouvez faire jusqu'à 5 évaluations Chrono par jour.
-      <br>Gagnez des niveaux et des titres pour monter dans le classement !
+      Affrontez de nouveaux défis chaque jour pour tester vos connaissances !
     </div>
   </div>
 
@@ -164,6 +187,11 @@
     function startGame(subject) {
       // Redirige vers chrono_game.html en passant la matière choisie
       window.location.href = `chrono_game.html?subject=${subject}`;
+    }
+
+    function startHardcoreTest() {
+      // Redirige vers la page hardcore_test.html
+      window.location.href = `hardcore_test.html`;
     }
   </script>
 
