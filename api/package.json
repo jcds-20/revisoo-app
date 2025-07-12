@@ -1,12 +1,14 @@
-{
+ {
   "name": "revisoo-app",
   "version": "1.0.0",
   "private": true,
+  "type": "module",  
   "main": "api/generate-evaluation.js",
   "scripts": {
     "start": "node api/generate-evaluation.js"
   },
   "dependencies": {
-    "openai": "^4.47.1"
+    "openai": "^4.47.1",
+    "@supabase/supabase-js": "^2.x.x" 
   }
 }
