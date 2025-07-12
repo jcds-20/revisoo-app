@@ -287,14 +287,19 @@
           return;
         }
 
-        // Validation du mot de passe (longueur, chiffres, caractères)
-        const digitCount = (password.match(/\d/g) || []).length;
-        const validChars = /^[a-zA-Z0-9]+$/.test(password);
+        // --- NOUVELLE VALIDATION DU MOT DE PASSE ---
+        const hasDigit = /[0-9]/.test(password); // Vérifie la présence d'au moins un chiffre
+        const hasLetter = /[a-zA-Z]/.test(password); // Vérifie la présence d'au moins une lettre
 
-        if (password.length < 7 || digitCount < 3 || !validChars) {
-          showMessage(registerError, "Mot de passe invalide. Il doit contenir au moins 7 caractères, dont 3 chiffres, et uniquement des lettres et chiffres.", true);
+        if (password.length < 4 || !hasDigit || !hasLetter) {
+          showMessage(
+            registerError,
+            "Mot de passe invalide. Il doit contenir au moins 4 caractères, dont au moins 1 chiffre et 1 lettre.",
+            true
+          );
           return;
         }
+        // --- FIN NOUVELLE VALIDATION DU MOT DE PASSE ---
 
         // Appel à Supabase pour l'inscription
         const { error } = await supabase.auth.signUp({
